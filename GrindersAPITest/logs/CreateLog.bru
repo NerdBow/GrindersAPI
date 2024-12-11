@@ -1,0 +1,15 @@
+meta {
+  name: CreateLog
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:8080/log/
+  body: json
+  auth: none
+}
+
+body:json {
+  {"id": "asd"}
+}

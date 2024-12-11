@@ -1,0 +1,25 @@
+meta {
+  name: Test No Id
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:8080/log/
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "date": 1,
+    "duration": 1,
+    "name": "Mark",
+    "category": "Study",
+    "userId": 1
+  }
+}
+
+assert {
+  res.status: eq 400
+}
