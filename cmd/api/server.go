@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/NerdBow/GrindersAPI/api/logs"
 	"net/http"
+	"strconv"
 )
 
 type Handler struct{}
@@ -30,21 +31,55 @@ func (handler *LogHandler) ServeHTTP(writer http.ResponseWriter, request *http.R
 		if !requestLog.Validate() {
 			writer.WriteHeader(http.StatusBadRequest)
 			writer.Write([]byte("400 Bad Request"))
+			return
 		}
 
 		fmt.Println("Post")
 
 	case http.MethodGet:
-		logId := request.URL.Path[5:]
+		requestedId := request.URL.Path[5:]
 
-		fmt.Println(request.URL.Path, logId)
+		logId, err := strconv.Atoi(requestedId)
+
+		if err != nil {
+			fmt.Println()
+			writer.WriteHeader(http.StatusBadRequest)
+			writer.Write([]byte("400 Bad Request"))
+			return
+		}
+
+		fmt.Printf("Fetch Log %d", logId)
 
 		fmt.Println("Get")
 
 	case http.MethodPut:
+		requestedId := request.URL.Path[5:]
+
+		logId, err := strconv.Atoi(requestedId)
+
+		if err != nil {
+			fmt.Println()
+			writer.WriteHeader(http.StatusBadRequest)
+			writer.Write([]byte("400 Bad Request"))
+			return
+		}
+		fmt.Printf("Update Log %d", logId)
 		fmt.Println("Put")
 
 	case http.MethodDelete:
+		requestedId := request.URL.Path[5:]
+
+		logId, err := strconv.Atoi(requestedId)
+
+		if err != nil {
+			fmt.Println()
+			writer.WriteHeader(http.StatusBadRequest)
+			writer.Write([]byte("400 Bad Request"))
+			return
+		}
+
+		fmt.Printf("Delete Log %d", logId)
+
 		fmt.Println("Delete")
 	}
 }
