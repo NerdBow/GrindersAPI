@@ -17,10 +17,6 @@ type Log struct {
 }
 
 func (log Log) Validate() bool {
-	if log.Id == 0 {
-		return false
-	}
-
 	if log.Date == 0 {
 		return false
 	}
