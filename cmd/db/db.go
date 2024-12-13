@@ -2,7 +2,9 @@ package db
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
+
 	"github.com/NerdBow/GrindersAPI/api/logs"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -83,6 +85,23 @@ func (db Sqlite3DB) GetRecentLog() (int, error) {
 
 func (db Sqlite3DB) GetLog(id int) (logs.Log, error) {
 	log := logs.Log{}
+
+	row, err := db.db.Query(fmt.Sprintf("SELECT id, date, duration, name, category, userId FROM 'logs' WHERE id = %d;", id))
+
+	if err != nil {
+		return log, err
+	}
+
+	if !row.Next() {
+		return log, errors.New("There was no row with that primary key.")
+	}
+
+	err = row.Scan(&log.Id, &log.Date, &log.Duration, &log.Name, &log.Category, &log.UserId)
+
+	if err != nil {
+		return log, err
+	}
+
 	return log, nil
 }
 
