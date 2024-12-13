@@ -136,6 +136,14 @@ func (db Sqlite3DB) UpdateLog(newLogAddr *logs.Log) (bool, error) {
 }
 
 func (db Sqlite3DB) DeleteLog(id int) error {
+	statement, err := db.db.Prepare(fmt.Sprintf("DELETE FROM 'logs' WHERE id = %d", id))
+	if err != nil {
+		return err
+	}
+	_, err = statement.Exec()
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
