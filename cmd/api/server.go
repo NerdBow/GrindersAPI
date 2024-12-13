@@ -3,9 +3,11 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/NerdBow/GrindersAPI/api/logs"
 	"net/http"
 	"strconv"
+
+	"github.com/NerdBow/GrindersAPI/api/logs"
+	"github.com/NerdBow/GrindersAPI/cmd/db"
 )
 
 type Handler struct{}
@@ -14,9 +16,9 @@ func (handler *Handler) ServeHTTP(writer http.ResponseWriter, request *http.Requ
 	writer.Write([]byte("Hello"))
 }
 
-type LogHandler struct{}
+type LogHandler struct{ db db.Database }
 
-func (handler *LogHandler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
+func (handler LogHandler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	switch request.Method {
 	case http.MethodPost:
 		decoder := json.NewDecoder(request.Body)
@@ -36,6 +38,32 @@ func (handler *LogHandler) ServeHTTP(writer http.ResponseWriter, request *http.R
 			writer.Write([]byte("400 Bad Request"))
 			return
 		}
+
+		logId, err := handler.db.PostLog(requestLog)
+
+		if err != nil {
+			fmt.Println(err)
+			writer.WriteHeader(http.StatusInternalServerError)
+			writer.Write([]byte("500 Internal Server Error"))
+			return
+		}
+
+		writer.Header().Set("Content-Type", "application/json")
+
+		data := struct {
+			Id int `json:"id"`
+		}{logId}
+
+		dataBytes, err := json.Marshal(data)
+
+		if err != nil {
+			fmt.Println(err)
+			writer.WriteHeader(http.StatusInternalServerError)
+			writer.Write([]byte("500 Internal Server Error"))
+			return
+		}
+
+		writer.Write(dataBytes)
 
 		fmt.Println("Post")
 
@@ -88,10 +116,19 @@ func (handler *LogHandler) ServeHTTP(writer http.ResponseWriter, request *http.R
 	}
 }
 func main() {
+
+	sql, err := db.Start()
+
+	defer sql.Close()
+
+	if err != nil {
+		panic(err)
+	}
+
 	mux := http.NewServeMux()
 	mux.Handle("/", &Handler{})
 
-	mux.Handle("/log/", &LogHandler{})
+	mux.Handle("/log/", &LogHandler{db: sql})
 
 	http.ListenAndServe(":8080", mux)
 }
