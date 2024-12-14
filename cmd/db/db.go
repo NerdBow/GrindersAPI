@@ -49,7 +49,9 @@ func (db Sqlite3DB) PostLog(log logs.Log) (int, error) {
 		return -2, err
 	}
 
-	id, err := db.GetRecentLog()
+	temp, err := result.LastInsertId()
+
+	id := int(temp)
 
 	if err != nil {
 		return -3, err
@@ -140,10 +142,14 @@ func (db Sqlite3DB) DeleteLog(id int) error {
 	if err != nil {
 		return err
 	}
-	_, err = statement.Exec()
+
+	result, err := statement.Exec()
+
 	if err != nil {
+		fmt.Println(result)
 		return err
 	}
+
 	return nil
 }
 
