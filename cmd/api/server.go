@@ -48,8 +48,6 @@ func (handler LogHandler) ServeHTTP(writer http.ResponseWriter, request *http.Re
 			return
 		}
 
-		writer.Header().Set("Content-Type", "application/json")
-
 		data := struct {
 			Id int `json:"id"`
 		}{logId}
@@ -62,6 +60,8 @@ func (handler LogHandler) ServeHTTP(writer http.ResponseWriter, request *http.Re
 			writer.Write([]byte("500 Internal Server Error"))
 			return
 		}
+
+		writer.Header().Set("Content-Type", "application/json")
 
 		writer.Write(dataBytes)
 
@@ -80,22 +80,73 @@ func (handler LogHandler) ServeHTTP(writer http.ResponseWriter, request *http.Re
 			return
 		}
 
-		fmt.Printf("Fetch Log %d", logId)
+		queriedLog, err := handler.db.GetLog(logId)
+
+		if err != nil {
+			fmt.Println(err)
+			writer.WriteHeader(http.StatusInternalServerError)
+			writer.Write([]byte("500 Internal Server Error"))
+			return
+		}
+
+		dataBytes, err := json.Marshal(queriedLog)
+
+		if err != nil {
+			fmt.Println(err)
+			writer.WriteHeader(http.StatusInternalServerError)
+			writer.Write([]byte("500 Internal Server Error"))
+			return
+		}
+
+		writer.Header().Set("Content-Type", "application/json")
+
+		writer.Write(dataBytes)
+
+		fmt.Printf("Fetch Log %d\n", logId)
 
 		fmt.Println("Get")
 
 	case http.MethodPut:
-		requestedId := request.URL.Path[5:]
+		decoder := json.NewDecoder(request.Body)
+		var requestLog logs.Log
+		err := decoder.Decode(&requestLog)
 
-		logId, err := strconv.Atoi(requestedId)
-
-		if err != nil {
-			fmt.Println("Put method attempted with:", requestedId)
+		if err != nil || requestLog.Id == 0 {
 			writer.WriteHeader(http.StatusBadRequest)
 			writer.Write([]byte("400 Bad Request"))
+			fmt.Println(err)
 			return
 		}
-		fmt.Printf("Update Log %d", logId)
+
+		result, err := handler.db.UpdateLog(&requestLog)
+
+		if err != nil || !result {
+			fmt.Println(result)
+			writer.WriteHeader(http.StatusBadRequest)
+			writer.Write([]byte("400 Bad Request"))
+			fmt.Println(err)
+			return
+		}
+
+		data := struct {
+			Id int `json:"id"`
+		}{requestLog.Id}
+
+		dataBytes, err := json.Marshal(data)
+
+		if err != nil {
+			writer.WriteHeader(http.StatusBadRequest)
+			writer.Write([]byte("400 Bad Request"))
+			fmt.Println(err)
+			return
+		}
+
+		writer.Header().Set("Content-Type", "application/json")
+
+		writer.Write(dataBytes)
+
+		fmt.Printf("Update Log %d", requestLog.Id)
+
 		fmt.Println("Put")
 
 	case http.MethodDelete:
