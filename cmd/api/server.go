@@ -18,7 +18,7 @@ func (handler *Handler) ServeHTTP(writer http.ResponseWriter, request *http.Requ
 
 type LogHandler struct{ db db.Database }
 
-func (handler LogHandler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
+func (handler *LogHandler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	switch request.Method {
 	case http.MethodPost:
 		decoder := json.NewDecoder(request.Body)
@@ -160,6 +160,32 @@ func (handler LogHandler) ServeHTTP(writer http.ResponseWriter, request *http.Re
 			writer.Write([]byte("400 Bad Request"))
 			return
 		}
+
+		err = handler.db.DeleteLog(logId)
+
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			writer.Write([]byte("500 Internal Server Error"))
+			fmt.Println(err)
+			return
+		}
+
+		data := struct {
+			Id int `json:"id"`
+		}{logId}
+
+		dataBytes, err := json.Marshal(data)
+
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			writer.Write([]byte("500 Internal Server Error"))
+			fmt.Println(err)
+			return
+		}
+
+		writer.Header().Set("Content-Type", "application/json")
+
+		writer.Write(dataBytes)
 
 		fmt.Printf("Delete Log %d", logId)
 
