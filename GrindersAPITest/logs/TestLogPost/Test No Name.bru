@@ -1,0 +1,25 @@
+meta {
+  name: Test No Name
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{local_server}}/log/
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "id": 1,
+    "date": 1,
+    "duration": 1,
+    "category": "Study",
+    "userId": 1
+  }
+}
+
+assert {
+  res.status: eq 400
+}
