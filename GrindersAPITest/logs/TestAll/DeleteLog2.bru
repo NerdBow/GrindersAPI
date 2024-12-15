@@ -1,0 +1,16 @@
+meta {
+  name: DeleteLog2
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{local_server}}/log/{{log_number}}
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.id: eq {{log_number}}
+}
