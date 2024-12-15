@@ -28,4 +28,4 @@ go.work.sum
 *.db
 
 # Bruno Test
-*/FreeTest
+*/FreeTest/
