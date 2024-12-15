@@ -1,0 +1,21 @@
+meta {
+  name: CreateLog
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{local_server}}/log/
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "date": 12,
+    "duration": 6600,
+    "name": "暗殺貴族",
+    "category": "Reading",
+    "userId": 1
+  }
+}

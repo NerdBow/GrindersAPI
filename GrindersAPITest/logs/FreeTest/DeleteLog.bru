@@ -1,11 +1,11 @@
 meta {
   name: DeleteLog
   type: http
-  seq: 3
+  seq: 4
 }
 
 delete {
-  url: http://localhost:8080/log/
+  url: {{local_server}}/log/2
   body: none
   auth: none
 }
