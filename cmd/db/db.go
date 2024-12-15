@@ -34,14 +34,13 @@ type Sqlite3DB struct {
 }
 
 func (db Sqlite3DB) PostLog(log logs.Log) (int, error) {
-	statement, err := db.db.Prepare(
-		fmt.Sprintf("INSERT INTO 'logs' (date, duration, name, category, userId) VALUES(%d, %d, \"%s\", \"%s\", %d);", log.Date, log.Duration, log.Name, log.Category, log.UserId))
+	statement, err := db.db.Prepare("INSERT INTO 'logs' (date, duration, name, category, userId) VALUES(?, ?, ?, ?, ?);")
 
 	if err != nil {
 		return -1, err
 	}
 
-	result, err := statement.Exec()
+	result, err := statement.Exec(log.Date, log.Duration, log.Name, log.Category, log.UserId)
 
 	fmt.Println(result)
 
@@ -60,35 +59,10 @@ func (db Sqlite3DB) PostLog(log logs.Log) (int, error) {
 	return id, nil
 }
 
-func (db Sqlite3DB) GetRecentLog() (int, error) {
-
-	var rowId int
-
-	row, err := db.db.Query("SELECT id FROM 'logs' ORDER BY id DESC LIMIT 1;")
-
-	defer row.Close()
-
-	if err != nil {
-		return -1, err
-	}
-
-	if !row.Next() {
-		return -1, nil
-	}
-
-	err = row.Scan(&rowId)
-
-	if err != nil {
-		return -1, err
-	}
-
-	return rowId, nil
-}
-
 func (db Sqlite3DB) GetLog(id int) (logs.Log, error) {
 	log := logs.Log{}
 
-	row, err := db.db.Query(fmt.Sprintf("SELECT id, date, duration, name, category, userId FROM 'logs' WHERE id = %d;", id))
+	row, err := db.db.Query("SELECT id, date, duration, name, category, userId FROM 'logs' WHERE id = ?;", id)
 
 	defer row.Close()
 
@@ -119,15 +93,13 @@ func (db Sqlite3DB) UpdateLog(newLogAddr *logs.Log) (bool, error) {
 
 	newLog.Merge(log)
 
-	statement, err := db.db.Prepare(
-		fmt.Sprintf("UPDATE 'logs' SET date = %d, duration = %d, name = \"%s\", category = \"%s\" WHERE id = %d;",
-			newLog.Date, newLog.Duration, newLog.Name, newLog.Category, newLog.Id))
+	statement, err := db.db.Prepare("UPDATE 'logs' SET date = ?, duration = ?, name = ?, category = ? WHERE id = ?;")
 
 	if err != nil {
 		return false, err
 	}
 
-	result, err := statement.Exec()
+	result, err := statement.Exec(newLog.Date, newLog.Duration, newLog.Name, newLog.Category, newLog.Id)
 
 	if err != nil {
 		fmt.Println(result)
@@ -138,12 +110,13 @@ func (db Sqlite3DB) UpdateLog(newLogAddr *logs.Log) (bool, error) {
 }
 
 func (db Sqlite3DB) DeleteLog(id int) error {
-	statement, err := db.db.Prepare(fmt.Sprintf("DELETE FROM 'logs' WHERE id = %d", id))
+	statement, err := db.db.Prepare("DELETE FROM 'logs' WHERE id = ?")
+
 	if err != nil {
 		return err
 	}
 
-	result, err := statement.Exec()
+	result, err := statement.Exec(id)
 
 	if err != nil {
 		fmt.Println(result)
@@ -159,7 +132,6 @@ func (db Sqlite3DB) Close() error {
 
 type Database interface {
 	PostLog(logs.Log) (int, error)
-	GetRecentLog() (int, error)
 	GetLog(int) (logs.Log, error)
 	UpdateLog(*logs.Log) (bool, error)
 	DeleteLog(int) error
