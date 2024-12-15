@@ -1,0 +1,15 @@
+meta {
+  name: Test Decimal
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{local_server}}/log/3.0
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 400
+}

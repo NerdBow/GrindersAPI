@@ -1,0 +1,15 @@
+meta {
+  name: Test Deleted Id
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{local_server}}/log/2
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 500
+}
