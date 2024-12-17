@@ -1,0 +1,22 @@
+meta {
+  name: Test Random Field
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{local_server}}/log/
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "id": 0,
+    "fifa": "asdf"
+  }
+}
+
+assert {
+  res.status: eq 400
+}

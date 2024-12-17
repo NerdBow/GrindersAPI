@@ -1,0 +1,21 @@
+meta {
+  name: Test No Id
+  type: http
+  seq: 2
+}
+
+put {
+  url: {{local_server}}/log/
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "pp"
+  }
+}
+
+assert {
+  res.status: eq 400
+}
