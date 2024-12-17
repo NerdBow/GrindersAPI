@@ -109,6 +109,7 @@ func (handler *LogHandler) ServeHTTP(writer http.ResponseWriter, request *http.R
 
 	case http.MethodPut:
 		decoder := json.NewDecoder(request.Body)
+		decoder.DisallowUnknownFields()
 		var requestLog logs.Log
 		err := decoder.Decode(&requestLog)
 
