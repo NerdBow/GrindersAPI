@@ -124,8 +124,8 @@ func (handler *LogHandler) ServeHTTP(writer http.ResponseWriter, request *http.R
 
 		if err != nil || !result {
 			fmt.Println(result)
-			writer.WriteHeader(http.StatusBadRequest)
-			writer.Write([]byte("400 Bad Request"))
+			writer.WriteHeader(http.StatusInternalServerError)
+			writer.Write([]byte("500 Internal Server Error"))
 			fmt.Println(err)
 			return
 		}
@@ -137,8 +137,8 @@ func (handler *LogHandler) ServeHTTP(writer http.ResponseWriter, request *http.R
 		dataBytes, err := json.Marshal(data)
 
 		if err != nil {
-			writer.WriteHeader(http.StatusBadRequest)
-			writer.Write([]byte("400 Bad Request"))
+			writer.WriteHeader(http.StatusInternalServerError)
+			writer.Write([]byte("500 Internal Server Error"))
 			fmt.Println(err)
 			return
 		}
