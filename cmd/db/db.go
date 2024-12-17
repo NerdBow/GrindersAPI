@@ -109,21 +109,32 @@ func (db Sqlite3DB) UpdateLog(newLogAddr *logs.Log) (bool, error) {
 	return true, nil
 }
 
-func (db Sqlite3DB) DeleteLog(id int) error {
+func (db Sqlite3DB) DeleteLog(id int) (bool, error) {
 	statement, err := db.db.Prepare("DELETE FROM 'logs' WHERE id = ?")
 
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	result, err := statement.Exec(id)
 
 	if err != nil {
 		fmt.Println(result)
-		return err
+		return false, err
 	}
 
-	return nil
+	rowsUpdated, err := result.RowsAffected()
+
+	if err != nil {
+		fmt.Println(result)
+		return false, err
+	}
+
+	if rowsUpdated == 0 {
+		return false, errors.New("There was no log deleted")
+	}
+
+	return true, nil
 }
 
 func (db Sqlite3DB) Close() error {
@@ -134,6 +145,6 @@ type Database interface {
 	PostLog(logs.Log) (int, error)
 	GetLog(int) (logs.Log, error)
 	UpdateLog(*logs.Log) (bool, error)
-	DeleteLog(int) error
+	DeleteLog(int) (bool, error)
 	Close() error
 }
