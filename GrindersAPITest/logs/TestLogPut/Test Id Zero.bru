@@ -1,0 +1,21 @@
+meta {
+  name: Test Id Zero
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{local_server}}/log/
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "id": 0
+  }
+}
+
+assert {
+  res.status: eq 400
+}

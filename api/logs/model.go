@@ -16,11 +16,7 @@ type Log struct {
 	UserId   int           `json:"userId"`
 }
 
-func (log Log) Validate() bool {
-	if log.Id == 0 {
-		return false
-	}
-
+func (log *Log) Validate() bool {
 	if log.Date == 0 {
 		return false
 	}
@@ -43,6 +39,25 @@ func (log Log) Validate() bool {
 	return true
 }
 
-func (log Log) String() string {
+// Takes the existing log and fill in all the unfilled fields from that of the otherLog
+func (log *Log) Merge(otherLog Log) {
+	if log.Date == 0 {
+		log.Date = otherLog.Date
+	}
+
+	if log.Duration == 0 {
+		log.Duration = otherLog.Duration
+	}
+
+	if log.Name == "" {
+		log.Name = otherLog.Name
+	}
+
+	if log.Category == "" {
+		log.Category = otherLog.Category
+	}
+}
+
+func (log *Log) String() string {
 	return fmt.Sprintf("Id: %d\nDate: %s\nDuration: %d\nName: %s\nCategory: %s\n", log.Id, time.Unix(log.Date, 0), log.Duration, log.Name, log.Category)
 }

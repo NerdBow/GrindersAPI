@@ -1,0 +1,26 @@
+meta {
+  name: Test Random Field
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{local_server}}/log/
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "date": 1,
+    "duration": 1,
+    "name": "Mark",
+    "category": "Study",
+    "userId": 1,
+    "asdf": "asdf"
+  }
+}
+
+assert {
+  res.status: eq 400
+}

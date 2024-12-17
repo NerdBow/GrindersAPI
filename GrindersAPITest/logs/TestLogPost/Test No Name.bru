@@ -1,11 +1,11 @@
 meta {
-  name: Test No UserId
+  name: Test No Name
   type: http
-  seq: 6
+  seq: 4
 }
 
 post {
-  url: http://localhost:8080/log/
+  url: {{local_server}}/log/
   body: json
   auth: none
 }
@@ -15,8 +15,8 @@ body:json {
     "id": 1,
     "date": 1,
     "duration": 1,
-    "name": "Mark",
-    "category": "Study"
+    "category": "Study",
+    "userId": 1
   }
 }
 
