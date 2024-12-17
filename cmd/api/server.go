@@ -163,9 +163,9 @@ func (handler *LogHandler) ServeHTTP(writer http.ResponseWriter, request *http.R
 			return
 		}
 
-		err = handler.db.DeleteLog(logId)
+		result, err := handler.db.DeleteLog(logId)
 
-		if err != nil {
+		if err != nil || !result {
 			writer.WriteHeader(http.StatusInternalServerError)
 			writer.Write([]byte("500 Internal Server Error"))
 			fmt.Println(err)
