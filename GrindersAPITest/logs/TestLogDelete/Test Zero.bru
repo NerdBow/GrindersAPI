@@ -1,0 +1,15 @@
+meta {
+  name: Test Zero
+  type: http
+  seq: 4
+}
+
+delete {
+  url: {{local_server}}/log/0
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 500
+}
