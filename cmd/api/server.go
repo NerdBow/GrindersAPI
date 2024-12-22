@@ -194,6 +194,51 @@ func (handler *LogHandler) ServeHTTP(writer http.ResponseWriter, request *http.R
 		fmt.Println("Delete")
 	}
 }
+
+type LogsHandler struct{ db db.Database }
+
+func (handler *LogsHandler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
+	const categoryParameter string = "category"
+	const pageParameter string = "page"
+
+	switch request.Method {
+	case http.MethodGet:
+		queryValues := request.URL.Query()
+		category := queryValues.Get(categoryParameter)
+		page, err := strconv.Atoi(queryValues.Get(pageParameter))
+
+		if err != nil {
+			writer.WriteHeader(http.StatusBadRequest)
+			writer.Write([]byte("400 Bad Request"))
+			fmt.Println(err)
+			return
+		}
+
+		logs, err := handler.db.GetLogs(page, category)
+
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			writer.Write([]byte("500 Internal Server Error"))
+			fmt.Println(err)
+			return
+		}
+
+		dataBytes, err := json.Marshal(*logs)
+
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			writer.Write([]byte("500 Internal Server Error"))
+			fmt.Println(err)
+			return
+		}
+
+		writer.Header().Set("Content-Type", "application/json")
+
+		writer.Write(dataBytes)
+
+	}
+}
+
 func main() {
 
 	sql, err := db.Start()
@@ -208,6 +253,8 @@ func main() {
 	mux.Handle("/", &Handler{})
 
 	mux.Handle("/log/", &LogHandler{db: sql})
+
+	mux.Handle("/logs/", &LogsHandler{db: sql})
 
 	http.ListenAndServe(":8080", mux)
 }

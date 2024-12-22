@@ -1,0 +1,16 @@
+meta {
+  name: GetLogs
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{local_server}}/logs/?page=0&category=TestCat
+  body: none
+  auth: none
+}
+
+params:query {
+  page: 0
+  category: TestCat
+}
