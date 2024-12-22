@@ -207,8 +207,6 @@ func (handler *LogsHandler) ServeHTTP(writer http.ResponseWriter, request *http.
 		category := queryValues.Get(categoryParameter)
 		page, err := strconv.Atoi(queryValues.Get(pageParameter))
 
-		fmt.Println(queryValues)
-
 		if err != nil {
 			writer.WriteHeader(http.StatusBadRequest)
 			writer.Write([]byte("400 Bad Request"))
