@@ -64,11 +64,11 @@ func (db Sqlite3DB) GetLog(id int) (logs.Log, error) {
 
 	row, err := db.db.Query("SELECT id, date, duration, name, category, userId FROM 'logs' WHERE id = ?;", id)
 
-	defer row.Close()
-
 	if err != nil {
 		return log, err
 	}
+
+	defer row.Close()
 
 	if !row.Next() {
 		return log, errors.New("There was no row with that primary key.")
@@ -88,27 +88,19 @@ func (db Sqlite3DB) GetLogs(page int, category string) (*[]logs.Log, error) {
 
 	var query string
 
-	fmt.Println(page, category)
-
 	if category == "" {
-		query = "SELECT id, date, duration, name, category, userId FROM 'logs' WHERE category IS NOT ? LIMIT ?, ?;"
-
-		fmt.Println("first")
+		query = "SELECT id, date, duration, name, category, userId FROM 'logs' WHERE category IS NOT ? ORDER BY date DESC LIMIT ?, ?;"
 	} else {
-		query = "SELECT id, date, duration, name, category, userId FROM 'logs' WHERE category = ? LIMIT ?, ?;"
-
-		fmt.Println("second")
+		query = "SELECT id, date, duration, name, category, userId FROM 'logs' WHERE category = ? ORDER BY date DESC LIMIT ?, ?;"
 	}
 
 	rows, err := db.db.Query(query, category, page*10, (page+1)*10)
 
-	fmt.Println(rows)
-
-	defer rows.Close()
-
 	if err != nil {
 		return &logsList, err
 	}
+
+	defer rows.Close()
 
 	for rows.Next() {
 		rowLog := logs.Log{}
