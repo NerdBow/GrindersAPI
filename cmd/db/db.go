@@ -83,6 +83,45 @@ func (db Sqlite3DB) GetLog(id int) (logs.Log, error) {
 	return log, nil
 }
 
+func (db Sqlite3DB) GetLogs(page int, category string) (*[]logs.Log, error) {
+	logsList := make([]logs.Log, 0, 10)
+
+	var query string
+
+	fmt.Println(page, category)
+
+	if category == "" {
+		query = "SELECT id, date, duration, name, category, userId FROM 'logs' WHERE category IS NOT ? LIMIT ?, ?;"
+
+		fmt.Println("first")
+	} else {
+		query = "SELECT id, date, duration, name, category, userId FROM 'logs' WHERE category = ? LIMIT ?, ?;"
+
+		fmt.Println("second")
+	}
+
+	rows, err := db.db.Query(query, category, page*10, (page+1)*10)
+
+	fmt.Println(rows)
+
+	defer rows.Close()
+
+	if err != nil {
+		return &logsList, err
+	}
+
+	for rows.Next() {
+		rowLog := logs.Log{}
+		err = rows.Scan(&rowLog.Id, &rowLog.Date, &rowLog.Duration, &rowLog.Name, &rowLog.Category, &rowLog.UserId)
+		if err != nil {
+			return &logsList, err
+		}
+		logsList = append(logsList, rowLog)
+	}
+
+	return &logsList, nil
+}
+
 func (db Sqlite3DB) UpdateLog(newLogAddr *logs.Log) (bool, error) {
 	newLog := *newLogAddr
 	log, err := db.GetLog(newLog.Id)
@@ -144,6 +183,7 @@ func (db Sqlite3DB) Close() error {
 type Database interface {
 	PostLog(logs.Log) (int, error)
 	GetLog(int) (logs.Log, error)
+	GetLogs(int, string) (*[]logs.Log, error)
 	UpdateLog(*logs.Log) (bool, error)
 	DeleteLog(int) (bool, error)
 	Close() error
