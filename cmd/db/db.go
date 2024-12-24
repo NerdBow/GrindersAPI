@@ -24,17 +24,23 @@ func Start() (Database, error) {
 
 	statement.Exec()
 
-	realDb := Sqlite3DB{db: db}
+	statement, err = db.Prepare("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username STRING, salt STRING, hash STRING)")
+
+	if err != nil {
+		return nil, err
+	}
+
+	statement.Exec()
+
+	realDb := Sqlite3DB{db}
 
 	return realDb, nil
 }
 
-type Sqlite3DB struct {
-	db *sql.DB
-}
+type Sqlite3DB struct{ *sql.DB }
 
 func (db Sqlite3DB) PostLog(log logs.Log) (int, error) {
-	statement, err := db.db.Prepare("INSERT INTO 'logs' (date, duration, name, category, userId) VALUES(?, ?, ?, ?, ?);")
+	statement, err := db.Prepare("INSERT INTO 'logs' (date, duration, name, category, userId) VALUES(?, ?, ?, ?, ?);")
 
 	if err != nil {
 		return -1, err
@@ -62,7 +68,7 @@ func (db Sqlite3DB) PostLog(log logs.Log) (int, error) {
 func (db Sqlite3DB) GetLog(id int) (logs.Log, error) {
 	log := logs.Log{}
 
-	row, err := db.db.Query("SELECT id, date, duration, name, category, userId FROM 'logs' WHERE id = ?;", id)
+	row, err := db.Query("SELECT id, date, duration, name, category, userId FROM 'logs' WHERE id = ?;", id)
 
 	if err != nil {
 		return log, err
@@ -94,7 +100,7 @@ func (db Sqlite3DB) GetLogs(page int, category string) (*[]logs.Log, error) {
 		query = "SELECT id, date, duration, name, category, userId FROM 'logs' WHERE category = ? ORDER BY date DESC LIMIT ?, ?;"
 	}
 
-	rows, err := db.db.Query(query, category, page*10, (page+1)*10)
+	rows, err := db.Query(query, category, page*10, (page+1)*10)
 
 	if err != nil {
 		return &logsList, err
@@ -124,7 +130,7 @@ func (db Sqlite3DB) UpdateLog(newLogAddr *logs.Log) (bool, error) {
 
 	newLog.Merge(log)
 
-	statement, err := db.db.Prepare("UPDATE 'logs' SET date = ?, duration = ?, name = ?, category = ? WHERE id = ?;")
+	statement, err := db.Prepare("UPDATE 'logs' SET date = ?, duration = ?, name = ?, category = ? WHERE id = ?;")
 
 	if err != nil {
 		return false, err
@@ -141,7 +147,7 @@ func (db Sqlite3DB) UpdateLog(newLogAddr *logs.Log) (bool, error) {
 }
 
 func (db Sqlite3DB) DeleteLog(id int) (bool, error) {
-	statement, err := db.db.Prepare("DELETE FROM 'logs' WHERE id = ?")
+	statement, err := db.Prepare("DELETE FROM 'logs' WHERE id = ?")
 
 	if err != nil {
 		return false, err
@@ -169,7 +175,7 @@ func (db Sqlite3DB) DeleteLog(id int) (bool, error) {
 }
 
 func (db Sqlite3DB) Close() error {
-	return db.db.Close()
+	return db.Close()
 }
 
 type Database interface {
