@@ -259,6 +259,18 @@ func (handler *SignInHandler) ServeHTTP(writer http.ResponseWriter, request *htt
 			return
 		}
 
+		if requestedUser.Username == "" {
+			writer.WriteHeader(http.StatusBadRequest)
+			writer.Write([]byte("400 Bad Request"))
+			return
+		}
+
+		if requestedUser.Password == "" {
+			writer.WriteHeader(http.StatusBadRequest)
+			writer.Write([]byte("400 Bad Request"))
+			return
+		}
+
 		result, err := handler.db.SignIn(requestedUser.Username, requestedUser.Password)
 
 		// Add different error when the user is not in the db
@@ -311,6 +323,18 @@ func (handler *SignUpHandler) ServeHTTP(writer http.ResponseWriter, request *htt
 			writer.WriteHeader(http.StatusBadRequest)
 			writer.Write([]byte("400 Bad Request"))
 			fmt.Println(err)
+			return
+		}
+
+		if requestedUser.Username == "" {
+			writer.WriteHeader(http.StatusBadRequest)
+			writer.Write([]byte("400 Bad Request"))
+			return
+		}
+
+		if requestedUser.Password == "" {
+			writer.WriteHeader(http.StatusBadRequest)
+			writer.Write([]byte("400 Bad Request"))
 			return
 		}
 
