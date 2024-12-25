@@ -1,0 +1,20 @@
+meta {
+  name: EmptyBody
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{local_server}}/user/signin/
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+  }
+}
+
+assert {
+  res.status: eq 400
+}

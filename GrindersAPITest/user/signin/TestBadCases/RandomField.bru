@@ -1,0 +1,23 @@
+meta {
+  name: RandomField
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{local_server}}/user/signin/
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "Anson",
+    "password": "1234",
+    "pp": 1
+  }
+}
+
+assert {
+  res.status: eq 400
+}
