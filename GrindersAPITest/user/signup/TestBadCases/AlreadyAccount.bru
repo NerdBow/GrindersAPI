@@ -1,0 +1,18 @@
+meta {
+  name: AlreadyAccount
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{local_server}}/user/signup/
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "Anson",
+    "password": "1234"
+  }
+}

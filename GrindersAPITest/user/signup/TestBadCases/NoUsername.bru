@@ -1,0 +1,21 @@
+meta {
+  name: NoUsername
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{local_server}}/user/signup/
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "password": "1234"
+  }
+}
+
+assert {
+  res.status: eq 400
+}

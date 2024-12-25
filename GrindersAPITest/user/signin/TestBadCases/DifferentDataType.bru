@@ -1,0 +1,18 @@
+meta {
+  name: DifferentDataType
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{local_server}}/user/signin/
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": 12,
+    "password": 14
+  }
+}

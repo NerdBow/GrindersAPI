@@ -239,6 +239,125 @@ func (handler *LogsHandler) ServeHTTP(writer http.ResponseWriter, request *http.
 	}
 }
 
+type SignInHandler struct{ db db.Database }
+
+func (handler *SignInHandler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
+	switch request.Method {
+	case http.MethodPost:
+		decoder := json.NewDecoder(request.Body)
+		decoder.DisallowUnknownFields()
+		var requestedUser struct {
+			Username string `json:"username"`
+			Password string `json:"password"`
+		}
+		err := decoder.Decode(&requestedUser)
+
+		if err != nil {
+			writer.WriteHeader(http.StatusBadRequest)
+			writer.Write([]byte("400 Bad Request"))
+			fmt.Println(err)
+			return
+		}
+
+		if requestedUser.Username == "" {
+			writer.WriteHeader(http.StatusBadRequest)
+			writer.Write([]byte("400 Bad Request"))
+			return
+		}
+
+		if requestedUser.Password == "" {
+			writer.WriteHeader(http.StatusBadRequest)
+			writer.Write([]byte("400 Bad Request"))
+			return
+		}
+
+		result, err := handler.db.SignIn(requestedUser.Username, requestedUser.Password)
+
+		// Add different error when the user is not in the db
+		if err != nil {
+			writer.WriteHeader(http.StatusBadRequest)
+			writer.Write([]byte("400 Bad Request"))
+			fmt.Println(err)
+			return
+		}
+
+		token := struct {
+			Token string `json:"token"`
+		}{result}
+
+		dataBytes, err := json.Marshal(token)
+
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			writer.Write([]byte("500 Internal Server Error"))
+			fmt.Println(err)
+			return
+		}
+
+		writer.WriteHeader(http.StatusOK)
+
+		writer.Header().Set("Content-Type", "application/json")
+
+		writer.Write(dataBytes)
+
+		return
+
+	}
+	return
+}
+
+type SignUpHandler struct{ db db.Database }
+
+func (handler *SignUpHandler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
+	switch request.Method {
+	case http.MethodPost:
+		decoder := json.NewDecoder(request.Body)
+		decoder.DisallowUnknownFields()
+		var requestedUser struct {
+			Username string `json:"username"`
+			Password string `json:"password"`
+		}
+		err := decoder.Decode(&requestedUser)
+
+		if err != nil {
+			writer.WriteHeader(http.StatusBadRequest)
+			writer.Write([]byte("400 Bad Request"))
+			fmt.Println(err)
+			return
+		}
+
+		if requestedUser.Username == "" {
+			writer.WriteHeader(http.StatusBadRequest)
+			writer.Write([]byte("400 Bad Request"))
+			return
+		}
+
+		if requestedUser.Password == "" {
+			writer.WriteHeader(http.StatusBadRequest)
+			writer.Write([]byte("400 Bad Request"))
+			return
+		}
+
+		result, err := handler.db.SignUp(requestedUser.Username, requestedUser.Password)
+
+		if result && err != nil {
+			writer.WriteHeader(http.StatusBadRequest)
+			writer.Write([]byte("400 Bad Request. Username is taken"))
+			fmt.Println(err)
+			return
+		} else if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			writer.Write([]byte("500 Internal Server Error"))
+			fmt.Println(err)
+			return
+		}
+
+		writer.WriteHeader(http.StatusOK)
+		writer.Write([]byte("200 Account Created"))
+
+	}
+}
+
 func main() {
 
 	sql, err := db.Start()
@@ -255,6 +374,10 @@ func main() {
 	mux.Handle("/log/", &LogHandler{db: sql})
 
 	mux.Handle("/logs/", &LogsHandler{db: sql})
+
+	mux.Handle("/user/signup/", &SignUpHandler{db: sql})
+
+	mux.Handle("/user/signin/", &SignInHandler{db: sql})
 
 	http.ListenAndServe(":8080", mux)
 }
