@@ -10,6 +10,19 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+type Database interface {
+	PostLog(logs.Log) (int, error)
+	GetLog(int) (logs.Log, error)
+	GetLogs(int, string) (*[]logs.Log, error)
+	UpdateLog(*logs.Log) (bool, error)
+	DeleteLog(int) (bool, error)
+	SignIn(string, string) (string, error)
+	SignUp(string, string) (bool, error)
+	Close() error
+}
+
+type Sqlite3DB struct{ *sql.DB }
+
 func Start() (Database, error) {
 	db, err := sql.Open("sqlite3", "data/logs.db")
 	if err != nil {
@@ -36,8 +49,6 @@ func Start() (Database, error) {
 
 	return realDb, nil
 }
-
-type Sqlite3DB struct{ *sql.DB }
 
 func (db Sqlite3DB) PostLog(log logs.Log) (int, error) {
 	statement, err := db.Prepare("INSERT INTO 'logs' (date, duration, name, category, userId) VALUES(?, ?, ?, ?, ?);")
@@ -178,11 +189,69 @@ func (db Sqlite3DB) Close() error {
 	return db.Close()
 }
 
-type Database interface {
-	PostLog(logs.Log) (int, error)
-	GetLog(int) (logs.Log, error)
-	GetLogs(int, string) (*[]logs.Log, error)
-	UpdateLog(*logs.Log) (bool, error)
-	DeleteLog(int) (bool, error)
-	Close() error
+func (db Sqlite3DB) SignUp(username string, password string) (bool, error) {
+	const saltLength int = 10
+	row := db.QueryRow("SELECT username FROM 'users' WHERE username = ?", username)
+
+	var queryUsername string
+	err := row.Scan(&queryUsername)
+
+	if err == nil {
+		fmt.Println("There already exist that username")
+		return true, errors.New("Username is taken")
+	}
+
+	salt, err := GenerateSalt(saltLength)
+
+	if err != nil {
+		fmt.Println("Salt failed to generate")
+		return false, err
+	}
+
+	hash, err := HashPassword(append([]byte(password), salt...))
+
+	if err != nil {
+		return false, err
+	}
+
+	statement, err := db.Prepare("INSERT INTO 'users' (username, salt, hash) VALUES(?, ?, ?);")
+
+	if err != nil {
+		return false, err
+	}
+
+	_, err = statement.Exec(username, string(salt), string(hash))
+
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
+func (db Sqlite3DB) SignIn(username string, password string) (string, error) {
+	row := db.QueryRow("SELECT username, salt, hash FROM 'users' WHERE username = ?", username)
+
+	var queriedUser User
+	err := row.Scan(&queriedUser.Username, &queriedUser.Salt, &queriedUser.Hash)
+
+	if err != nil {
+		fmt.Println("This user does not exist")
+		return "", err
+	}
+
+	hash, err := HashPassword([]byte(password + queriedUser.Salt))
+
+	if err != nil {
+		fmt.Println("Hash went wrong")
+		return "", err
+	}
+
+	if string(hash) != queriedUser.Hash {
+		return "", errors.New("Password was not correct")
+	}
+
+	// This should return a JWT or some sort of session token
+	return "Success", nil
+
 }
