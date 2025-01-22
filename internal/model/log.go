@@ -1,11 +1,11 @@
-package logs
+package model
 
 import (
 	"fmt"
 	"time"
 )
 
-// The struct and date format for each log in the system
+// A struct of the information contatined in each log the user inputs
 type Log struct {
 	Id       int           `json:"id"`
 	Date     int64         `json:"date"`
@@ -16,27 +16,28 @@ type Log struct {
 	UserId   int           `json:"userId"`
 }
 
-func (log *Log) Validate() bool {
+// Validate checks for any problems with the structure.
+// Returns map[string]string of fields as keys and the problems with the field if there are any.
+func (log *Log) Validate() map[string]string {
+	problems := make(map[string]string)
+
+	if log.Id == 0 {
+		problems["id"] = "No id"
+	}
 	if log.Date == 0 {
-		return false
+		problems["date"] = "No date"
 	}
-
 	if log.Duration == 0 {
-		return false
+		problems["duration"] = "No duration"
 	}
-
-	if log.Name == "" {
-		return false
-	}
-
 	if log.Category == "" {
-		return false
+		problems["category"] = "No category"
+	}
+	if log.UserId == 0 {
+		problems["userId"] = "No userId"
 	}
 
-	if log.UserId == 0 {
-		return false
-	}
-	return true
+	return problems
 }
 
 // Takes the existing log and fill in all the unfilled fields from that of the otherLog
