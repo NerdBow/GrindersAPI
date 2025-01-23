@@ -11,14 +11,46 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+// Defines the methods a database needs in order to be usable for the API.
 type Database interface {
+	// Adds the given log into the database.
+	//
+	// Returns an int of the log's id in the database and an sql error if one occurs.
 	PostLog(model.Log) (int, error)
+
+	// Retrives a specificed log from the database of a user by userId and logId.
+	//
+	// Returns log struct of the specificed log if successful.
+	// Else, it returns an empty log and the error.
 	GetLog(int, int) (model.Log, error)
+
+	// Retrives a slice of 10 logs specified by the parameters of:
+	//
+	// userId, page, startTime(epoch of the lower bound of logs), timeLength(DAY, WEEK, MONTH since the start time), category
+	//
+	// Returns a pointer of the slice of logs if successful.
+	// Else, it returns a pointer with the an empty slice of logs and the error.
 	GetLogs(int, int, int64, string, string) (*[]model.Log, error)
+
+	// Update the specified log with new information in the given log.
+	//
+	// Returns true of the operation was successful.
+	// Else, it returns false and an error if it was unsuccessful.
 	UpdateLog(model.Log) (bool, error)
+
+	// Deletes the specified log from the userId and logId.
+	//
+	// Returns true of the operation was successful.
+	// Else, it returns false and an error if it was unsuccessful.
 	DeleteLog(int, int) (bool, error)
+
 	SignIn(string, string) (string, error)
+
 	SignUp(string, string) (bool, error)
+
+	// Shuts off the connection to the database.
+	//
+	// Returns an error if any occur.
 	Close() error
 }
 
@@ -68,8 +100,6 @@ func (db Sqlite3DB) PostLog(log model.Log) (int, error) {
 	}
 
 	result, err := statement.Exec(log.Date, log.Duration, log.Name, log.Category, log.UserId)
-
-	fmt.Println(result)
 
 	if err != nil {
 		return -2, err
