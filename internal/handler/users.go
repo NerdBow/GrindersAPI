@@ -22,6 +22,9 @@ func handleUserSignUp(s service.UserService) http.HandlerFunc {
 	}
 }
 
+// Handler for POST request of user/{}/log endpoint.
+// Allows user to add a log.
+// Returns http handler func.
 func HandleUserLogPost(s service.UserLogService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		decoder := json.NewDecoder(r.Body)
@@ -76,6 +79,9 @@ func HandleUserLogPost(s service.UserLogService) http.HandlerFunc {
 	}
 }
 
+// Handler for GET request of user/{}/log endpoint.
+// Allows user to get information of one of their logs.
+// Returns http handler func.
 func HandleUserLogGet(s service.UserLogService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// This can be factored out into a new function
@@ -128,6 +134,9 @@ func HandleUserLogGet(s service.UserLogService) http.HandlerFunc {
 	}
 }
 
+// Handler for PUT request of user/{}/log endpoint.
+// Allows user to update information of one of their logs.
+// Returns http handler func.
 func HandleUserLogUpdate(s service.UserLogService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		decoder := json.NewDecoder(r.Body)
@@ -175,6 +184,9 @@ func HandleUserLogUpdate(s service.UserLogService) http.HandlerFunc {
 	}
 }
 
+// Handler for DELETE request of user/{}/log endpoint.
+// Allows user to delete of one of their logs.
+// Returns http handler func.
 func HandleUserLogDelete(s service.UserLogService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		requestedId := r.URL.Path[5:]
