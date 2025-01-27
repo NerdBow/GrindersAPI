@@ -1,9 +1,0 @@
-{
-  "version": "1",
-  "name": "GrindersAPI",
-  "type": "collection",
-  "ignore": [
-    "node_modules",
-    ".git"
-  ]
-}
