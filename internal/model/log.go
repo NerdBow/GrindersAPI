@@ -1,24 +1,20 @@
 package model
 
-import (
-	"fmt"
-	"time"
-)
-
-// A struct of the information contatined in each log the user inputs
+// A struct of the information contatined in each log.
+// Date and Duration are int64 of seconds.
 type Log struct {
-	Id       int           `json:"id"`
-	Date     int64         `json:"date"`
-	Duration time.Duration `json:"duration"`
-	Name     string        `json:"name"`
-	Category string        `json:"category"`
-	Tags     []string      `json:"tags"`
-	UserId   int           `json:"userId"`
+	Id       int    `json:"id"`
+	Date     int64  `json:"date"`
+	Duration int64  `json:"duration"`
+	Name     string `json:"name"`
+	Category string `json:"category"`
+	Goal     string `json:"goal"`
+	UserId   int    `json:"userId"`
 }
 
 // Validate checks for any problems with the structure.
 // Returns map[string]string of fields as keys and the problems with the field if there are any.
-func (log *Log) Validate() map[string]string {
+func (log Log) Validate() map[string]string {
 	problems := make(map[string]string)
 
 	if log.Id == 0 {
@@ -30,8 +26,14 @@ func (log *Log) Validate() map[string]string {
 	if log.Duration == 0 {
 		problems["duration"] = "No duration"
 	}
+	if log.Name == "" {
+		problems["Name"] = "No name"
+	}
 	if log.Category == "" {
 		problems["category"] = "No category"
+	}
+	if log.Goal == "" {
+		problems["goal"] = "No goal"
 	}
 	if log.UserId == 0 {
 		problems["userId"] = "No userId"
@@ -57,8 +59,8 @@ func (log *Log) Merge(otherLog Log) {
 	if log.Category == "" {
 		log.Category = otherLog.Category
 	}
-}
 
-func (log *Log) String() string {
-	return fmt.Sprintf("Id: %d\nDate: %s\nDuration: %d\nName: %s\nCategory: %s\n", log.Id, time.Unix(log.Date, 0), log.Duration, log.Name, log.Category)
+	if log.Goal == "" {
+		log.Category = otherLog.Category
+	}
 }
