@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"strconv"
 
@@ -22,65 +23,61 @@ func handleUserSignUp(s service.UserService) http.HandlerFunc {
 	}
 }
 
+// Takes in the body of request and decodes into a log.
+//
+// Returns the decoded log from the body and an empty log and an error if the decode is not possible.
+func decodeLog(b io.ReadCloser) (model.Log, error) {
+	decoder := json.NewDecoder(b)
+	decoder.DisallowUnknownFields()
+
+	var requestLog model.Log
+	err := decoder.Decode(&requestLog)
+
+	if err != nil {
+		return model.Log{}, http.ErrBodyNotAllowed
+	}
+	return requestLog, nil
+}
+
 // Handler for POST request of user/{}/log endpoint.
 // Allows user to add a log.
+//
 // Returns http handler func.
 func HandleUserLogPost(s service.UserLogService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		decoder := json.NewDecoder(r.Body)
-		decoder.DisallowUnknownFields()
-		var requestLog model.Log
-		err := decoder.Decode(&requestLog)
-
-		fmt.Println(r.PathValue("id"))
-
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte("400 Bad request"))
-			fmt.Println(err)
-			return
-		}
-
-		if len(requestLog.Validate()) != 0 {
-			fmt.Println(requestLog.Validate())
-			fmt.Println("Log was not valid")
-			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte("400 Bad request"))
-			return
-		}
-
-		logId, err := s.AddUserLog(requestLog)
-
-		if err != nil {
-			fmt.Println(err)
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("500 Internal Server Error"))
-			return
-		}
-
-		data := struct {
-			Id int `json:"id"`
-		}{logId}
-
-		dataBytes, err := json.Marshal(data)
-
-		if err != nil {
-			fmt.Println(err)
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("500 Internal Server Error"))
-			return
-		}
-
+		// Assume that the ID is valid by middlewear
 		w.Header().Set("Content-Type", "application/json")
 
-		w.Write(dataBytes)
+		requestedLog, err := decodeLog(r.Body)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
 
-		fmt.Println("Post")
+		id, err := s.AddUserLog(requestedLog)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		dataBytes, err := json.Marshal(struct {
+			id int `json:"id"`
+		}{id})
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Write(dataBytes)
+		return
 	}
 }
 
 // Handler for GET request of user/{}/log endpoint.
 // Allows user to get information of one of their logs.
+//
 // Returns http handler func.
 func HandleUserLogGet(s service.UserLogService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -136,6 +133,7 @@ func HandleUserLogGet(s service.UserLogService) http.HandlerFunc {
 
 // Handler for PUT request of user/{}/log endpoint.
 // Allows user to update information of one of their logs.
+//
 // Returns http handler func.
 func HandleUserLogUpdate(s service.UserLogService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -186,6 +184,7 @@ func HandleUserLogUpdate(s service.UserLogService) http.HandlerFunc {
 
 // Handler for DELETE request of user/{}/log endpoint.
 // Allows user to delete of one of their logs.
+//
 // Returns http handler func.
 func HandleUserLogDelete(s service.UserLogService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
