@@ -93,13 +93,13 @@ func (db Sqlite3DB) CreateTables() error {
 }
 
 func (db Sqlite3DB) PostLog(log model.Log) (int, error) {
-	statement, err := db.Prepare("INSERT INTO 'logs' (date, duration, name, category, userId) VALUES(?, ?, ?, ?, ?);")
+	statement, err := db.Prepare("INSERT INTO 'logs' (date, duration, name, category, goal, userId) VALUES(?, ?, ?, ?, ?, ?);")
 
 	if err != nil {
 		return -1, err
 	}
 
-	result, err := statement.Exec(log.Date, log.Duration, log.Name, log.Category, log.UserId)
+	result, err := statement.Exec(log.Date, log.Duration, log.Name, log.Category, log.Goal, log.UserId)
 
 	if err != nil {
 		return -2, err
