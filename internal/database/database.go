@@ -16,7 +16,7 @@ type Database interface {
 	// Adds the given log into the database.
 	//
 	// Returns an int of the log's id in the database and an sql error if one occurs.
-	PostLog(model.Log) (int, error)
+	PostLog(int, model.Log) (int, error)
 
 	// Retrives a specificed log from the database of a user by userId and logId.
 	//
@@ -36,7 +36,7 @@ type Database interface {
 	//
 	// Returns true of the operation was successful.
 	// Else, it returns false and an error if it was unsuccessful.
-	UpdateLog(model.Log) (bool, error)
+	UpdateLog(int, model.Log) (bool, error)
 
 	// Deletes the specified log from the userId and logId.
 	//
@@ -92,7 +92,7 @@ func (db Sqlite3DB) CreateTables() error {
 	return nil
 }
 
-func (db Sqlite3DB) PostLog(log model.Log) (int, error) {
+func (db Sqlite3DB) PostLog(userId int, log model.Log) (int, error) {
 	statement, err := db.Prepare("INSERT INTO 'logs' (date, duration, name, category, goal, userId) VALUES(?, ?, ?, ?, ?, ?);")
 
 	if err != nil {
@@ -175,7 +175,7 @@ func (db Sqlite3DB) GetLogs(userId int, page int, startTime int64, timeLength st
 	return &logsList, nil
 }
 
-func (db Sqlite3DB) UpdateLog(newLog model.Log) (bool, error) {
+func (db Sqlite3DB) UpdateLog(userId int, newLog model.Log) (bool, error) {
 	log, err := db.GetLog(newLog.UserId, newLog.Id)
 
 	if err != nil {

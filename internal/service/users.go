@@ -45,8 +45,8 @@ func NewUserLogService(db database.Database) UserLogService {
 // Takes in a log struct of the log to be inserted in the database.
 //
 // Returns the id of the inserted log if successful. -1 and an error if unsuccessful.
-func (s *UserLogService) AddUserLog(log model.Log) (int, error) {
-	return s.db.PostLog(log)
+func (s *UserLogService) AddUserLog(userId int, log model.Log) (int, error) {
+	return s.db.PostLog(userId, log)
 }
 
 // Retrives a log to the database.
@@ -69,8 +69,8 @@ func (s *UserLogService) GetUserLogs(userId int, page int, startTime int64, time
 // Takes in a log struct
 //
 // Returns true and nil if update was successful. false and an error if not.
-func (s *UserLogService) UpdateUserLog(log model.Log) (bool, error) {
-	return s.db.UpdateLog(log)
+func (s *UserLogService) UpdateUserLog(userId int, log model.Log) (bool, error) {
+	return s.db.UpdateLog(userId, log)
 }
 
 // Deletes a log of the user in the database.
