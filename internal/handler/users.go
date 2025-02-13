@@ -39,22 +39,26 @@ func decodeLog(b io.ReadCloser) (model.Log, error) {
 	return requestLog, nil
 }
 
-// Handler for POST request of user/{}/log endpoint.
+// Gets the userId from the jwt
+// TODO: THIS IS A TEMP FUNCTION. ONCE I ADD IN THE JWT STUFF I WILL NEED TO CHANGE THIS
+func getIdFromToken(jwt string) int {
+	return 0
+}
+
+// Handler for POST request of user/log endpoint.
 // Allows user to add a log.
 //
 // Returns http handler func.
 func HandleUserLogPost(s service.UserLogService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Assume that the ID is valid by middlewear
-		w.Header().Set("Content-Type", "application/json")
-
 		requestedLog, err := decodeLog(r.Body)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		id, err := s.AddUserLog(requestedLog)
+		id, err := s.AddUserLog(getIdFromToken(""), requestedLog)
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -75,59 +79,97 @@ func HandleUserLogPost(s service.UserLogService) http.HandlerFunc {
 	}
 }
 
-// Handler for GET request of user/{}/log endpoint.
+// Handler for GET request of user/log endpoint.
 // Allows user to get information of one of their logs.
 //
 // Returns http handler func.
 func HandleUserLogGet(s service.UserLogService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
+		queryValues := r.URL.Query()
+
+		logId := queryValues.Get("id")
+
+		if logId == "" { // For the single log request
+			logId, err := strconv.Atoi(logId)
+
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+
+			log, err := s.GetUserLog(getIdFromToken(""), logId)
+
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			data, err := json.Marshal(log)
+
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			w.Write(data)
+			return
+		}
+
+		page := queryValues.Get("p")
+		category := queryValues.Get("c")
+		startTime := queryValues.Get("s")
+		timeFrame := queryValues.Get("f")
+
+		s.GetUserLogs()
+
 		// This can be factored out into a new function
-		requestedId := r.URL.Path[5:]
-		requestedUser := r.PathValue("username")
-
-		logId, err := strconv.Atoi(requestedId)
-
-		if err != nil {
-			fmt.Println("Get method attempted with:", requestedId)
-			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte("400 Bad Request"))
-			return
-		}
-
-		userId, err := strconv.Atoi(requestedUser)
-
-		if err != nil {
-			fmt.Println("Get method attempted with:", userId)
-			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte("400 Bad Request"))
-			return
-		}
-
-		queriedLog, err := s.GetUserLog(userId, logId)
-
-		if err != nil {
-			fmt.Println(err)
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("500 Internal Server Error"))
-			return
-		}
-
-		dataBytes, err := json.Marshal(queriedLog)
-
-		if err != nil {
-			fmt.Println(err)
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("500 Internal Server Error"))
-			return
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-
-		w.Write(dataBytes)
-
-		fmt.Printf("Fetch Log %d\n", logId)
-
-		fmt.Println("Get")
+		// requestedId := r.URL.Path[5:]
+		// requestedUser := r.PathValue("username")
+		//
+		// logId, err := strconv.Atoi(requestedId)
+		//
+		// if err != nil {
+		// 	fmt.Println("Get method attempted with:", requestedId)
+		// 	w.WriteHeader(http.StatusBadRequest)
+		// 	w.Write([]byte("400 Bad Request"))
+		// 	return
+		// }
+		//
+		// userId, err := strconv.Atoi(requestedUser)
+		//
+		// if err != nil {
+		// 	fmt.Println("Get method attempted with:", userId)
+		// 	w.WriteHeader(http.StatusBadRequest)
+		// 	w.Write([]byte("400 Bad Request"))
+		// 	return
+		// }
+		//
+		// queriedLog, err := s.GetUserLog(userId, logId)
+		//
+		// if err != nil {
+		// 	fmt.Println(err)
+		// 	w.WriteHeader(http.StatusInternalServerError)
+		// 	w.Write([]byte("500 Internal Server Error"))
+		// 	return
+		// }
+		//
+		// dataBytes, err := json.Marshal(queriedLog)
+		//
+		// if err != nil {
+		// 	fmt.Println(err)
+		// 	w.WriteHeader(http.StatusInternalServerError)
+		// 	w.Write([]byte("500 Internal Server Error"))
+		// 	return
+		// }
+		//
+		// w.Header().Set("Content-Type", "application/json")
+		//
+		// w.Write(dataBytes)
+		//
+		// fmt.Printf("Fetch Log %d\n", logId)
+		//
+		// fmt.Println("Get")
 	}
 }
 
