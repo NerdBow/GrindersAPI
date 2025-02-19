@@ -26,6 +26,7 @@ go.work.sum
 
 # Database
 *.db
+/data/
 
 # Bruno Test
 */FreeTest/
