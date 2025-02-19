@@ -21,6 +21,13 @@ func Run() {
 		return
 	}
 
+	err = db.CreateTables()
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
 	userService := service.NewUserService(db)
 	userLogService := service.NewUserLogService(db)
 

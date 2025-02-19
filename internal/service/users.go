@@ -19,16 +19,16 @@ func NewUserService(db database.Database) UserService {
 // Takes in a username and a password.
 //
 // Returns a bool if the signup was successful or not and an error if unsuccessful.
-func (s *UserService) SignUp(username string, password string) (bool, error) {
-	return s.db.SignUp(username, password)
+func (s *UserService) SignUp(username string, password string) error {
+	return nil
 }
 
 // Signs in a user to the database and creates a session or passes back an API key. //TODO: decide if I want an API KEY or a Session based system
 // Takes in a username and a password.
 //
 // Returns a string of the API Key or session token and if any error an error is returned as well.
-func (s *UserService) SignIn(username string, password string) (string, error) {
-	return s.db.SignIn(username, password)
+func (s *UserService) SignIn(username string, password string) error {
+	return nil
 }
 
 // The service which is used for the user/{id}/endpoint.
