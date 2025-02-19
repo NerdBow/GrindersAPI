@@ -67,6 +67,13 @@ func NewSqlite3DB() (*Sqlite3DB, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	_, err = db.Exec("PRAGMA journal_mode=WAL;")
+
+	if err != nil {
+		return nil, err
+	}
+
 	return &Sqlite3DB{db}, nil
 }
 
@@ -90,6 +97,29 @@ func (db Sqlite3DB) CreateTables() error {
 
 	statement.Exec()
 
+	statement, err = db.Prepare("CREATE INDEX IF NOT EXISTS logs_index_0 ON logs (userId, date);")
+
+	if err != nil {
+		return err
+	}
+
+	statement.Exec()
+
+	statement, err = db.Prepare("CREATE INDEX IF NOT EXISTS logs_index_1 ON logs (userId, category, date);")
+
+	if err != nil {
+		return err
+	}
+
+	statement.Exec()
+
+	statement, err = db.Prepare("CREATE INDEX IF NOT EXISTS logs_index_2 ON logs (userId, name, date);")
+
+	if err != nil {
+		return err
+	}
+
+	statement.Exec()
 	return nil
 }
 
