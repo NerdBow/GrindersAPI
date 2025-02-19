@@ -44,9 +44,7 @@ type Database interface {
 	// Else, it returns false and an error if it was unsuccessful.
 	DeleteLog(int, int) (bool, error)
 
-	SignIn(string, string) (string, error)
-
-	SignUp(string, string) (bool, error)
+	SignUp(string, string) error
 
 	// Shuts off the connection to the database.
 	//
@@ -73,7 +71,8 @@ func NewSqlite3DB() (*Sqlite3DB, error) {
 }
 
 func (db Sqlite3DB) CreateTables() error {
-	statement, err := db.Prepare("CREATE TABLE IF NOT EXISTS logs (id INTEGER PRIMARY KEY, date INTEGER, duration INTEGER, name TEXT, category TEXT, userId INTEGER)")
+
+	statement, err := db.Prepare("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username TEXT NOT NULL UNIQUE, hash TEXT NOT NULL UNIQUE)")
 
 	if err != nil {
 		return err
@@ -81,7 +80,9 @@ func (db Sqlite3DB) CreateTables() error {
 
 	statement.Exec()
 
-	statement, err = db.Prepare("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username STRING, salt STRING, hash STRING)")
+	statement, err = db.Prepare("CREATE TABLE IF NOT EXISTS logs " +
+		"(id INTEGER PRIMARY KEY, date INTEGER NOT NULL, duration INTEGER NOT NULL, name TEXT NOT NULL, category TEXT NOT NULL, goal TEXT NOT NULL, userId INTEGER NOT NULL, " +
+		"FOREIGN KEY (userId) REFERENCES users (id) ON UPDATE NO ACTION ON DELETE NO ACTION);")
 
 	if err != nil {
 		return err
@@ -226,6 +227,10 @@ func (db Sqlite3DB) DeleteLog(userId int, id int) (bool, error) {
 	}
 
 	return true, nil
+}
+
+func (db Sqlite3DB) SignUp(string, string) error {
+	return nil
 }
 
 func (db Sqlite3DB) Close() error {
