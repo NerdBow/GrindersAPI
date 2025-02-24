@@ -1,8 +1,18 @@
 package service
 
 import (
+	"encoding/base64"
+	"fmt"
+	"log"
+	"os"
+	"strconv"
+
+	"crypto/rand"
+
 	"github.com/NerdBow/GrindersAPI/internal/database"
 	"github.com/NerdBow/GrindersAPI/internal/model"
+	"github.com/joho/godotenv"
+	"golang.org/x/crypto/argon2"
 )
 
 // The service which is used for user/ endpoint.
@@ -13,6 +23,60 @@ type UserService struct {
 // Creates a new UserService.
 func NewUserService(db database.Database) UserService {
 	return UserService{db: db}
+}
+
+// Generates a random byte slice with the specified length.
+func (s *UserService) generateSalt(length int) []byte {
+	salt := make([]byte, length)
+	rand.Read(salt)
+	return salt
+}
+
+// Takes in the password string and returns the argonid2 encoded version of it.
+func (s *UserService) generateHash(password string) string {
+	err := godotenv.Load(".env")
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	hashTime, err := strconv.Atoi(os.Getenv("HASHTIME"))
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	hashMemory, err := strconv.Atoi(os.Getenv("HASHMEMORY"))
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	hashThreads, err := strconv.Atoi(os.Getenv("HASHTHREADS"))
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	hashLength, err := strconv.Atoi(os.Getenv("HASHLENGHT"))
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	saltLength, err := strconv.Atoi(os.Getenv("SALTLENGTH"))
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	saltBytes := s.generateSalt(saltLength)
+	hashBytes := argon2.IDKey([]byte(password), saltBytes, uint32(hashTime), uint32(hashMemory*1024), uint8(hashThreads), uint32(hashLength))
+
+	salt := base64.RawStdEncoding.EncodeToString(saltBytes)
+	hash := base64.RawStdEncoding.EncodeToString(hashBytes)
+
+	return fmt.Sprintf("$argon2id$v=%d$m=%d,t=%d,p=%d$%s$%s", argon2.Version, hashMemory*1024, hashTime, hashThreads, salt, hash)
 }
 
 // Signs up a user to the database.
