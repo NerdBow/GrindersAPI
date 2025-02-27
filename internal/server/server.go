@@ -8,10 +8,17 @@ import (
 
 	"github.com/NerdBow/GrindersAPI/internal/database"
 	"github.com/NerdBow/GrindersAPI/internal/service"
+	"github.com/joho/godotenv"
 )
 
 // Starts the server for the API
 func Run() {
+	err := godotenv.Load(".env")
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	mux := http.NewServeMux()
 
 	db, err := database.NewSqlite3DB()
