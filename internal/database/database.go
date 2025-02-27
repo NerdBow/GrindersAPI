@@ -45,19 +45,13 @@ type Database interface {
 	DeleteLog(int, int) (bool, error)
 
 	SignUp(string, string) error
-
-	// Shuts off the connection to the database.
-	//
-	// Returns an error if any occur.
-	Close() error
 }
 
-func Start() (*sql.DB, error) {
-	db, err := sql.Open("sqlite3", "data/logs.db")
-	if err != nil {
-		return nil, err
-	}
-	return db, nil
+// Shuts off the connection to the database.
+//
+// Returns an error if any occur.
+func Close(db *sql.DB) error {
+	return db.Close()
 }
 
 type Sqlite3DB struct{ *sql.DB }
@@ -261,8 +255,4 @@ func (db Sqlite3DB) DeleteLog(userId int, id int) (bool, error) {
 
 func (db Sqlite3DB) SignUp(string, string) error {
 	return nil
-}
-
-func (db Sqlite3DB) Close() error {
-	return db.Close()
 }
