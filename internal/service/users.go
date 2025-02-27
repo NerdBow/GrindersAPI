@@ -11,34 +11,35 @@ import (
 
 	"github.com/NerdBow/GrindersAPI/internal/database"
 	"github.com/NerdBow/GrindersAPI/internal/model"
-	"github.com/joho/godotenv"
 	"golang.org/x/crypto/argon2"
 )
 
 // The service which is used for user/ endpoint.
 type UserService struct {
-	db database.Database
+	db database.UserDatabase
 }
 
 // Creates a new UserService.
-func NewUserService(db database.Database) UserService {
+func NewUserService(db database.UserDatabase) UserService {
 	return UserService{db: db}
 }
 
 // Generates a random byte slice with the specified length.
-func (s *UserService) generateSalt(length int) []byte {
+func (s *UserService) generateSalt() []byte {
+
+	length, err := strconv.Atoi(os.Getenv("SALTLENGTH"))
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	salt := make([]byte, length)
 	rand.Read(salt)
 	return salt
 }
 
 // Takes in the password string and returns the argonid2 encoded version of it.
-func (s *UserService) generateHash(password string) string {
-	err := godotenv.Load(".env")
-
-	if err != nil {
-		log.Fatal(err)
-	}
+func (s *UserService) generateHash(password string, saltBytes []byte) string {
 
 	hashTime, err := strconv.Atoi(os.Getenv("HASHTIME"))
 
@@ -64,13 +65,6 @@ func (s *UserService) generateHash(password string) string {
 		log.Fatal(err)
 	}
 
-	saltLength, err := strconv.Atoi(os.Getenv("SALTLENGTH"))
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	saltBytes := s.generateSalt(saltLength)
 	hashBytes := argon2.IDKey([]byte(password), saltBytes, uint32(hashTime), uint32(hashMemory*1024), uint8(hashThreads), uint32(hashLength))
 
 	salt := base64.RawStdEncoding.EncodeToString(saltBytes)
@@ -97,11 +91,11 @@ func (s *UserService) SignIn(username string, password string) error {
 
 // The service which is used for the user/{id}/endpoint.
 type UserLogService struct {
-	db database.Database
+	db database.UserLogDatabase
 }
 
 // Creates a new UserLogService.
-func NewUserLogService(db database.Database) UserLogService {
+func NewUserLogService(db database.UserLogDatabase) UserLogService {
 	return UserLogService{db: db}
 }
 
