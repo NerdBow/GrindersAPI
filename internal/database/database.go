@@ -11,8 +11,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-// Defines the methods a database needs in order to be usable for the API.
-type Database interface {
+type UserLogDatabase interface {
 	// Adds the given log into the database.
 	//
 	// Returns an int of the log's id in the database and an sql error if one occurs.
@@ -43,7 +42,12 @@ type Database interface {
 	// Returns true of the operation was successful.
 	// Else, it returns false and an error if it was unsuccessful.
 	DeleteLog(int, int) (bool, error)
+}
 
+type UserDatabase interface {
+	// Adds user to the database provided their username and hashed password.
+	//
+	// Returns an error or nil depending if an error happened.
 	SignUp(string, string) error
 }
 
@@ -253,6 +257,6 @@ func (db Sqlite3DB) DeleteLog(userId int, id int) (bool, error) {
 	return true, nil
 }
 
-func (db Sqlite3DB) SignUp(string, string) error {
+func (db Sqlite3DB) SignUp(username string, hash string) error {
 	return nil
 }
