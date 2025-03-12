@@ -60,8 +60,8 @@ func Close(db *sql.DB) error {
 
 type Sqlite3DB struct{ *sql.DB }
 
-func NewSqlite3DB() (*Sqlite3DB, error) {
-	db, err := sql.Open("sqlite3", "data/logs.db")
+func NewSqlite3DB(file string) (*Sqlite3DB, error) {
+	db, err := sql.Open("sqlite3", file)
 	if err != nil {
 		return nil, err
 	}

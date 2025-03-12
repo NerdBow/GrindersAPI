@@ -29,7 +29,7 @@ func Run() {
 
 	switch sqlService {
 	case "sqlite3":
-		db, err := database.NewSqlite3DB()
+		db, err := database.NewSqlite3DB("data/logs.db")
 
 		if err != nil {
 			fmt.Println(err)
