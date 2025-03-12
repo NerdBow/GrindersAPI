@@ -258,5 +258,17 @@ func (db Sqlite3DB) DeleteLog(userId int, id int) (bool, error) {
 }
 
 func (db Sqlite3DB) SignUp(username string, hash string) error {
+	statement, err := db.Prepare("INSERT INTO 'users' (username, hash) VALUES(?, ?)")
+
+	if err != nil {
+		return err
+	}
+
+	_, err = statement.Exec(username, hash)
+
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
