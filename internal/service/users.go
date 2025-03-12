@@ -78,7 +78,9 @@ func (s *UserService) generateHash(password string, saltBytes []byte) string {
 //
 // Returns a bool if the signup was successful or not and an error if unsuccessful.
 func (s *UserService) SignUp(username string, password string) error {
-	return nil
+	hash := s.generateHash(password, s.generateSalt())
+	err := s.db.SignUp(username, hash)
+	return err
 }
 
 // Signs in a user to the database and creates a session or passes back an API key. //TODO: decide if I want an API KEY or a Session based system
