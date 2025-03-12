@@ -1,14 +1,21 @@
 package service
 
 import (
+	"errors"
 	"fmt"
-	"github.com/joho/godotenv"
 	"testing"
+
+	"github.com/joho/godotenv"
 )
 
-type MockDB struct{}
+type MockDB struct {
+	tempHash string
+}
 
-func (db MockDB) SignUp(string, string) error {
+func (db MockDB) SignUp(username string, password string) error {
+	if password == db.tempHash {
+		return errors.New("The hash is the same!!")
+	}
 	return nil
 }
 
@@ -53,4 +60,20 @@ func TestHashGeneration(t *testing.T) {
 		t.Errorf("The two hashes are not the same.\nFuncHash: %s\nConstHash: %s", hash, expectedHash)
 	}
 
+}
+
+func TestSignUp(t *testing.T) {
+	s := NewUserService(MockDB{})
+
+	err := s.SignUp("TestUser", "Password")
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = s.SignUp("TestUser", "Password")
+
+	if err != nil {
+		t.Error(err)
+	}
 }
