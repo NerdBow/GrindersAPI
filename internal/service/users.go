@@ -14,6 +14,20 @@ import (
 	"golang.org/x/crypto/argon2"
 )
 
+type BlankFieldsError struct {
+}
+
+func (err *BlankFieldsError) Error() string {
+	return "Username and Password must not be blank."
+}
+
+type InvalidPasswordError struct {
+}
+
+func (err *InvalidPasswordError) Error() string {
+	return "Password must be 8 or more characters."
+}
+
 // The service which is used for user/ endpoint.
 type UserService struct {
 	db database.UserDatabase
@@ -78,6 +92,14 @@ func (s *UserService) generateHash(password string, saltBytes []byte) string {
 //
 // Returns a bool if the signup was successful or not and an error if unsuccessful.
 func (s *UserService) SignUp(username string, password string) error {
+	if username == "" || password == "" {
+		return &BlankFieldsError{}
+	}
+
+	if len(password) < 8 {
+		return &InvalidPasswordError{}
+	}
+
 	hash := s.generateHash(password, s.generateSalt())
 	err := s.db.SignUp(username, hash)
 	return err
