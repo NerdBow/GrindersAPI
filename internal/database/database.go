@@ -11,8 +11,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-// Defines the methods a database needs in order to be usable for the API.
-type Database interface {
+type UserLogDatabase interface {
 	// Adds the given log into the database.
 	//
 	// Returns an int of the log's id in the database and an sql error if one occurs.
@@ -43,27 +42,26 @@ type Database interface {
 	// Returns true of the operation was successful.
 	// Else, it returns false and an error if it was unsuccessful.
 	DeleteLog(int, int) (bool, error)
-
-	SignUp(string, string) error
-
-	// Shuts off the connection to the database.
-	//
-	// Returns an error if any occur.
-	Close() error
 }
 
-func Start() (*sql.DB, error) {
-	db, err := sql.Open("sqlite3", "data/logs.db")
-	if err != nil {
-		return nil, err
-	}
-	return db, nil
+type UserDatabase interface {
+	// Adds user to the database provided their username and hashed password.
+	//
+	// Returns an error or nil depending if an error happened.
+	SignUp(string, string) error
+}
+
+// Shuts off the connection to the database.
+//
+// Returns an error if any occur.
+func Close(db *sql.DB) error {
+	return db.Close()
 }
 
 type Sqlite3DB struct{ *sql.DB }
 
-func NewSqlite3DB() (*Sqlite3DB, error) {
-	db, err := sql.Open("sqlite3", "data/logs.db")
+func NewSqlite3DB(file string) (*Sqlite3DB, error) {
+	db, err := sql.Open("sqlite3", file)
 	if err != nil {
 		return nil, err
 	}
@@ -259,10 +257,18 @@ func (db Sqlite3DB) DeleteLog(userId int, id int) (bool, error) {
 	return true, nil
 }
 
-func (db Sqlite3DB) SignUp(string, string) error {
-	return nil
-}
+func (db Sqlite3DB) SignUp(username string, hash string) error {
+	statement, err := db.Prepare("INSERT INTO 'users' (username, hash) VALUES(?, ?)")
 
-func (db Sqlite3DB) Close() error {
-	return db.Close()
+	if err != nil {
+		return err
+	}
+
+	_, err = statement.Exec(username, hash)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

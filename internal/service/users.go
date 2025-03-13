@@ -1,18 +1,90 @@
 package service
 
 import (
+	"encoding/base64"
+	"fmt"
+	"log"
+	"os"
+	"strconv"
+
+	"crypto/rand"
+
 	"github.com/NerdBow/GrindersAPI/internal/database"
 	"github.com/NerdBow/GrindersAPI/internal/model"
+	"golang.org/x/crypto/argon2"
 )
+
+type BlankFieldsError struct {
+}
+
+func (err *BlankFieldsError) Error() string {
+	return "Username and Password must not be blank."
+}
+
+type InvalidPasswordError struct {
+}
+
+func (err *InvalidPasswordError) Error() string {
+	return "Password must be 8 or more characters."
+}
 
 // The service which is used for user/ endpoint.
 type UserService struct {
-	db database.Database
+	db database.UserDatabase
 }
 
 // Creates a new UserService.
-func NewUserService(db database.Database) UserService {
+func NewUserService(db database.UserDatabase) UserService {
 	return UserService{db: db}
+}
+
+// Generates a random byte slice with the specified length.
+func (s *UserService) generateSalt() []byte {
+
+	length, err := strconv.Atoi(os.Getenv("SALTLENGTH"))
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	salt := make([]byte, length)
+	rand.Read(salt)
+	return salt
+}
+
+// Takes in the password string and returns the argonid2 encoded version of it.
+func (s *UserService) generateHash(password string, saltBytes []byte) string {
+
+	hashTime, err := strconv.Atoi(os.Getenv("HASHTIME"))
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	hashMemory, err := strconv.Atoi(os.Getenv("HASHMEMORY"))
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	hashThreads, err := strconv.Atoi(os.Getenv("HASHTHREADS"))
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	hashLength, err := strconv.Atoi(os.Getenv("HASHLENGHT"))
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	hashBytes := argon2.IDKey([]byte(password), saltBytes, uint32(hashTime), uint32(hashMemory*1024), uint8(hashThreads), uint32(hashLength))
+
+	salt := base64.RawStdEncoding.EncodeToString(saltBytes)
+	hash := base64.RawStdEncoding.EncodeToString(hashBytes)
+
+	return fmt.Sprintf("$argon2id$v=%d$m=%d,t=%d,p=%d$%s$%s", argon2.Version, hashMemory*1024, hashTime, hashThreads, salt, hash)
 }
 
 // Signs up a user to the database.
@@ -20,7 +92,17 @@ func NewUserService(db database.Database) UserService {
 //
 // Returns a bool if the signup was successful or not and an error if unsuccessful.
 func (s *UserService) SignUp(username string, password string) error {
-	return nil
+	if username == "" || password == "" {
+		return &BlankFieldsError{}
+	}
+
+	if len(password) < 8 {
+		return &InvalidPasswordError{}
+	}
+
+	hash := s.generateHash(password, s.generateSalt())
+	err := s.db.SignUp(username, hash)
+	return err
 }
 
 // Signs in a user to the database and creates a session or passes back an API key. //TODO: decide if I want an API KEY or a Session based system
@@ -33,11 +115,11 @@ func (s *UserService) SignIn(username string, password string) error {
 
 // The service which is used for the user/{id}/endpoint.
 type UserLogService struct {
-	db database.Database
+	db database.UserLogDatabase
 }
 
 // Creates a new UserLogService.
-func NewUserLogService(db database.Database) UserLogService {
+func NewUserLogService(db database.UserLogDatabase) UserLogService {
 	return UserLogService{db: db}
 }
 
