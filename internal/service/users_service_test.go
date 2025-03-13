@@ -76,4 +76,37 @@ func TestSignUp(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+
+	var blankFieldsErr *BlankFieldsError
+	var invalidPasswordErr *InvalidPasswordError
+
+	err = s.SignUp("", "")
+
+	if !errors.As(err, &blankFieldsErr) {
+		t.Error(err)
+	}
+
+	err = s.SignUp("a", "")
+
+	if !errors.As(err, &blankFieldsErr) {
+		t.Error(err)
+	}
+
+	err = s.SignUp("", "a")
+
+	if !errors.As(err, &blankFieldsErr) {
+		t.Error(err)
+	}
+
+	err = s.SignUp("a", "asdfjkl")
+
+	if !errors.As(err, &invalidPasswordErr) {
+		t.Error(err)
+	}
+
+	err = s.SignUp("a", "asdfjkl;")
+
+	if errors.As(err, &invalidPasswordErr) {
+		t.Error(err)
+	}
 }
