@@ -2,17 +2,54 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 
+	"github.com/NerdBow/GrindersAPI/internal/middleware"
 	"github.com/NerdBow/GrindersAPI/internal/model"
 	"github.com/NerdBow/GrindersAPI/internal/service"
 )
 
-func handleUserSignIn(s service.UserService) http.HandlerFunc {
+func HandleUserSignIn(s service.UserService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		decoder := json.NewDecoder(r.Body)
+		decoder.DisallowUnknownFields()
+		userInfo := struct {
+			Username string `json:"username"`
+			Password string `json:"password"`
+		}{}
+		err := decoder.Decode(&userInfo)
 
+		if err != nil {
+			middleware.HandleError(w, err, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		err = s.SignUp(userInfo.Username, userInfo.Password)
+
+		var invalidPasswordErr *service.InvalidPasswordError
+		var blankFieldsErr *service.BlankFieldsError
+
+		if errors.As(err, &invalidPasswordErr) {
+			middleware.HandleError(w, err, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		if errors.As(err, &blankFieldsErr) {
+			middleware.HandleError(w, err, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		if err != nil {
+			middleware.HandleError(w, err, http.StatusInternalServerError, "Internal Server Error")
+			return
+		}
+
+		w.Write([]byte("Successfully created account"))
+		log.Printf("New account created | Username: %s", userInfo.Username)
 	}
 }
 
