@@ -27,7 +27,7 @@ func (log Log) Validate() map[string]string {
 		problems["duration"] = "No duration"
 	}
 	if log.Name == "" {
-		problems["Name"] = "No name"
+		problems["name"] = "No name"
 	}
 	if log.Category == "" {
 		problems["category"] = "No category"
