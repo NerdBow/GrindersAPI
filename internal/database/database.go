@@ -49,6 +49,11 @@ type UserDatabase interface {
 	//
 	// Returns an error or nil depending if an error happened.
 	SignUp(string, string) error
+
+	// Get the information of the user from the database with the given username
+	//
+	// Returns the user struct of the specified user and nil if successful else empty user and error
+	GetUserInfo(string) (model.User, error)
 }
 
 // Shuts off the connection to the database.
@@ -271,4 +276,28 @@ func (db Sqlite3DB) SignUp(username string, hash string) error {
 	}
 
 	return nil
+}
+
+func (db Sqlite3DB) GetUserInfo(username string) (model.User, error) {
+	var user model.User
+
+	row, err := db.Query("SELECT id, username, hash FROM 'users' WHERE username = ?;", username)
+
+	if err != nil {
+		return user, err
+	}
+
+	defer row.Close()
+
+	if !row.Next() {
+		return user, errors.New("No User Exist")
+	}
+
+	err = row.Scan(&user.UserId, &user.Username, &user.Hash)
+
+	if err != nil {
+		return user, err
+	}
+
+	return user, nil
 }
