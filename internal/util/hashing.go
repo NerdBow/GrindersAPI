@@ -3,7 +3,6 @@ package util
 import (
 	"crypto/rand"
 	"encoding/base64"
-	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -13,17 +12,24 @@ import (
 	"golang.org/x/crypto/argon2"
 )
 
-func GenerateSalt() []byte {
-
+func GenerateSalt() ([]byte, error) {
 	length, err := strconv.Atoi(os.Getenv("SALTLENGTH"))
 
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return nil, err
 	}
 
 	salt := make([]byte, length)
-	rand.Read(salt)
-	return salt
+
+	_, err = rand.Read(salt)
+
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	return salt, nil
 }
 
 // Takes in the password string and returns the argonid2 encoded version of it.
@@ -71,16 +77,16 @@ func parseHash(hash string) ([]byte, string, error) {
 
 }
 
-func CompareHashToPassword(hash string, password string) error {
+func CompareHashToPassword(hash string, password string) (bool, error) {
 	salt, _, err := parseHash(hash)
 
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	if hash != GenerateHash(password, []byte(salt)) {
-		return errors.New("Invalid Password")
+		return false, nil
 	}
 
-	return nil
+	return true, nil
 }
