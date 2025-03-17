@@ -71,7 +71,7 @@ func parseHash(hash string) ([]byte, string, error) {
 
 }
 
-func compareHashToPassword(hash string, password string) error {
+func CompareHashToPassword(hash string, password string) error {
 	salt, _, err := parseHash(hash)
 
 	if err != nil {
