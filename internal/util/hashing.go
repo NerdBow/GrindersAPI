@@ -61,7 +61,7 @@ func GenerateHash(password string, saltBytes []byte) string {
 	return fmt.Sprintf("$argon2id$v=%d$m=%d,t=%d,p=%d$%s$%s", argon2.Version, hashMemory*1024, hashTime, hashThreads, salt, hash)
 }
 
-func ParseHash(hash string) ([]byte, string, error) {
+func parseHash(hash string) ([]byte, string, error) {
 	parsedHash := strings.Split(hash, "$")
 	salt, err := base64.RawStdEncoding.DecodeString(parsedHash[len(parsedHash)-2])
 	if err != nil {
@@ -71,14 +71,14 @@ func ParseHash(hash string) ([]byte, string, error) {
 
 }
 
-func compareHash(user model.User, password string) error {
-	salt, _, err := ParseHash(user.Hash)
+func compareHashToPassword(hash string, password string) error {
+	salt, _, err := parseHash(hash)
 
 	if err != nil {
 		return err
 	}
 
-	if user.Hash != GenerateHash(password, []byte(salt)) {
+	if hash != GenerateHash(password, []byte(salt)) {
 		return errors.New("Invalid Password")
 	}
 
