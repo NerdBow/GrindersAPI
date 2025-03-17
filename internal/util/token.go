@@ -5,29 +5,21 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"log"
 	"os"
-	"strconv"
 	"time"
 )
 
-func createToken(user model.User) (string, error) {
-	jwtExpDuration, err := strconv.Atoi(os.Getenv("JWTEXP"))
+var (
+	CanNotAccessJWTSecretErr = errors.New("Unable to get JWT secret from env")
+)
 
-	if err != nil {
-		log.Println("CRITICAL: JWTEXP could not be parsed from the .env file!")
-		return "", errors.New("Can not get JWT EXP time from env")
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"userId":   user.UserId,
-		"username": user.Username,
-		"exp":      time.Now().Add(time.Minute * time.Duration(jwtExpDuration)).Unix(),
-	})
+func CreateToken(claimMap jwt.MapClaims) (string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claimMap)
 
 	jwtSecret := os.Getenv("JWTSECRET")
 
 	if jwtSecret == "" {
 		log.Println("CRITICAL: JWT secret could not be found in the .env file!")
-		return "", errors.New("Can not get secret")
+		return "", CanNotAccessJWTSecretErr
 	}
 
 	signedToken, err := token.SignedString([]byte(jwtSecret))
@@ -40,11 +32,11 @@ func createToken(user model.User) (string, error) {
 
 }
 
-func getClaimsFromToken(token string) (jwt.MapClaims, error) {
+func GetClaimsFromToken(token string) (jwt.MapClaims, error) {
 	key := func(token *jwt.Token) (any, error) {
 		secret := os.Getenv("JWTSECRET")
 		if secret == "" {
-			return nil, errors.New("Can not get secret")
+			return nil, CanNotAccessJWTSecretErr
 		}
 		return []byte(secret), nil
 	}
@@ -69,7 +61,7 @@ func getClaimsFromToken(token string) (jwt.MapClaims, error) {
 	return claims, nil
 }
 
-func checkTokenExpiration(claims jwt.MapClaims) (bool, error) {
+func CheckTokenExpiration(claims jwt.MapClaims) (bool, error) {
 	exp, err := claims.GetExpirationTime()
 
 	if err != nil {
@@ -81,28 +73,4 @@ func checkTokenExpiration(claims jwt.MapClaims) (bool, error) {
 	}
 
 	return true, nil
-}
-
-func getUserFromClaims(claims jwt.MapClaims) (model.User, error) {
-	var user model.User
-
-	ok, err := checkTokenExpiration(claims)
-
-	if err != nil {
-		return user, err
-	}
-
-	user.UserId, ok = claims["userId"].(int)
-
-	if !ok {
-		return user, jwt.ErrTokenMalformed
-	}
-
-	user.Username, ok = claims["username"].(string)
-
-	if !ok {
-		return user, jwt.ErrTokenMalformed
-	}
-
-	return user, nil
 }
