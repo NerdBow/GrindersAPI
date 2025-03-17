@@ -19,22 +19,38 @@ func TestMain(m *testing.M) {
 func TestCompareHash(t *testing.T) {
 	hash := "$argon2id$v=19$m=65536,t=1,p=4$c2FsdHNhbHQ$SRzrpBkxb+Cwwr5PQJL2pIGh9G59lfzlgOj3RRV73LKQYf2HycaaTY5yHimy7mnlWCY"
 	// Test right password
-	err := CompareHashToPassword(hash, "password")
-	if err != nil {
+	ok, err := CompareHashToPassword(hash, "password")
+	if !ok || err != nil {
 		t.Error(err)
 	}
 
 	// Test wrong password
-	err = CompareHashToPassword(hash, "worng_password")
-	if err == nil {
+	ok, err = CompareHashToPassword(hash, "worng_password")
+	if ok || err != nil {
+		t.Error(err)
+	}
+
+	// Test bad hash
+	ok, err = CompareHashToPassword("weird$hash", "worng_password")
+
+	if ok || err == nil {
 		t.Error(err)
 	}
 }
 
 func TestSaltGeneration(t *testing.T) {
 
-	salt1 := GenerateSalt()
-	salt2 := GenerateSalt()
+	salt1, err := GenerateSalt()
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	salt2, err := GenerateSalt()
+
+	if err != nil {
+		t.Error(err)
+	}
 
 	same := true
 
