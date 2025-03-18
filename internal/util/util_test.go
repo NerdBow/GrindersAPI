@@ -1,9 +1,12 @@
 package util
 
 import (
+	"errors"
 	"fmt"
 	"testing"
+	"time"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/joho/godotenv"
 )
 
@@ -14,6 +17,54 @@ func TestMain(m *testing.M) {
 		fmt.Println("env could not load")
 	}
 	m.Run()
+}
+
+func TestCreateToken(t *testing.T) {
+	// Test empty claims
+	claims := jwt.MapClaims{}
+	token, err := CreateToken(claims)
+	if token == "" || err != nil {
+		t.Error(err)
+	}
+}
+
+func TestGetClaimsFromToken(t *testing.T) {
+	validToken, _ := CreateToken(jwt.MapClaims{"exp": time.Now().Add(time.Hour).Unix()})
+
+	expiredToken := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDIyNjMyOTAsInVzZXJJZCI6MCwidXNlcm5hbWUiOiJOZXJkQm93In0.rs4uV7VgOxnjtPnHHDCc8IL3x5DsB06_7a6cWz0pQHM"
+
+	differentSigningToken := "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDIyNjMyOTAsInVzZXJJZCI6MCwidXNlcm5hbWUiOiJOZXJkQm93In0.FCMGfbj5Dpxh4TkX70izBR08jfkc4oP84x7IrC88RyOoRpvzuJAbB6b9-WzjB3-gYDoKBPy9PU_5kBTW9KLKKw"
+
+	invalidToken := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDIyNjMyOTAsInVzZXJJZCI6MCwidXNlcm5hbWUiOiJOZXJkQm93In0.rs4uV7VgOxnjtPnHHDCc8IL3x5DsB06_7a6cWz0pQHE"
+
+	// Test valid token
+	claims, err := GetClaimsFromToken(validToken)
+
+	if claims == nil || err != nil {
+		t.Error(err)
+	}
+
+	// Test expired token
+	claims, err = GetClaimsFromToken(expiredToken)
+
+	if claims != nil || err == nil {
+		t.Error(err)
+	}
+
+	// Test invalid token
+	claims, err = GetClaimsFromToken(invalidToken)
+
+	if claims != nil || !errors.Is(err, jwt.ErrSignatureInvalid) {
+		t.Error(err)
+	}
+
+	// Test wrong signing method
+	claims, err = GetClaimsFromToken(differentSigningToken)
+
+	if claims != nil || err == nil {
+		t.Error(err)
+	}
+
 }
 
 func TestCompareHash(t *testing.T) {
