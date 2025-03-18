@@ -2,10 +2,11 @@ package util
 
 import (
 	"errors"
-	"github.com/golang-jwt/jwt/v5"
 	"log"
 	"os"
 	"time"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
 var (
@@ -46,10 +47,6 @@ func GetClaimsFromToken(token string) (jwt.MapClaims, error) {
 	if err != nil {
 		log.Println(err)
 		return nil, err
-	}
-
-	if !parsedToken.Valid {
-		return nil, jwt.ErrSignatureInvalid
 	}
 
 	claims, ok := parsedToken.Claims.(jwt.MapClaims)
