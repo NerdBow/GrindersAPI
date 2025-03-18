@@ -30,6 +30,7 @@ func TestCreateToken(t *testing.T) {
 
 func TestGetClaimsFromToken(t *testing.T) {
 	validToken, _ := CreateToken(jwt.MapClaims{"userId": "1", "username": "haha", "exp": time.Now().Add(time.Hour).Unix()})
+	t.Log(validToken)
 
 	expiredToken := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDIyNjMyOTAsInVzZXJJZCI6MCwidXNlcm5hbWUiOiJOZXJkQm93In0.rs4uV7VgOxnjtPnHHDCc8IL3x5DsB06_7a6cWz0pQHM"
 
