@@ -21,15 +21,15 @@ func TestMain(m *testing.M) {
 
 func TestCreateToken(t *testing.T) {
 	// Test empty claims
-	claims := jwt.MapClaims{}
+	claims := jwt.MapClaims{"userId": 1}
 	token, err := CreateToken(claims)
-	if token == "" || err != nil {
+	if token != "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjF9.S_1kVG2Oa4wXLx34UENFb3BLurxE0DTUkQDOXY00ZXk" || err != nil {
 		t.Error(err)
 	}
 }
 
 func TestGetClaimsFromToken(t *testing.T) {
-	validToken, _ := CreateToken(jwt.MapClaims{"exp": time.Now().Add(time.Hour).Unix()})
+	validToken, _ := CreateToken(jwt.MapClaims{"userId": "1", "username": "haha", "exp": time.Now().Add(time.Hour).Unix()})
 
 	expiredToken := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDIyNjMyOTAsInVzZXJJZCI6MCwidXNlcm5hbWUiOiJOZXJkQm93In0.rs4uV7VgOxnjtPnHHDCc8IL3x5DsB06_7a6cWz0pQHM"
 
@@ -42,6 +42,14 @@ func TestGetClaimsFromToken(t *testing.T) {
 
 	if claims == nil || err != nil {
 		t.Error(err)
+	}
+
+	if userId, ok := claims["userId"].(string); userId != "1" || !ok {
+		t.Errorf("userId is not correct when parsing claims: %s != %s", userId, "1")
+	}
+
+	if username, ok := claims["username"].(string); username != "haha" || !ok {
+		t.Errorf("username is not correct when parsing claims: %s != %s", username, "haha")
 	}
 
 	// Test expired token
