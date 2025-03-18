@@ -87,7 +87,7 @@ func (s *UserService) SignIn(username string, password string) (string, error) {
 	}
 
 	claims := jwt.MapClaims{
-		"userId":   user.UserId,
+		"userId":   strconv.Itoa(user.UserId),
 		"username": user.Username,
 		"exp":      time.Now().Add(time.Minute * time.Duration(expTime)).Unix(),
 	}
