@@ -15,6 +15,11 @@ import (
 
 func HandleUserSignIn(s service.UserService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+	}
+}
+
+func HandleUserSignUp(s service.UserService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 		decoder := json.NewDecoder(r.Body)
 		decoder.DisallowUnknownFields()
 		userInfo := struct {
@@ -28,34 +33,25 @@ func HandleUserSignIn(s service.UserService) http.HandlerFunc {
 			return
 		}
 
-		err = s.SignUp(userInfo.Username, userInfo.Password)
+		ok, err := s.SignUp(userInfo.Username, userInfo.Password)
 
-		var invalidPasswordErr *service.InvalidPasswordError
-		var blankFieldsErr *service.BlankFieldsError
-
-		if errors.As(err, &invalidPasswordErr) {
+		if !ok && errors.Is(err, service.InvalidPasswordErr) {
 			middleware.HandleError(w, err, http.StatusBadRequest, err.Error())
 			return
 		}
 
-		if errors.As(err, &blankFieldsErr) {
+		if !ok && errors.Is(err, service.BlankFieldsErr) {
 			middleware.HandleError(w, err, http.StatusBadRequest, err.Error())
 			return
 		}
 
-		if err != nil {
+		if !ok || err != nil {
 			middleware.HandleError(w, err, http.StatusInternalServerError, "Internal Server Error")
 			return
 		}
 
 		w.Write([]byte("Successfully created account"))
 		log.Printf("New account created | Username: %s", userInfo.Username)
-	}
-}
-
-func handleUserSignUp(s service.UserService) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-
 	}
 }
 
