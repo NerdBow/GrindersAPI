@@ -34,58 +34,73 @@ func TestMain(m *testing.M) {
 	m.Run()
 }
 
-func TestSignUp(t *testing.T) {
-	s := NewUserService(&MockDB{make(map[string]struct{})})
+func TestSignin(t *testing.T) {
+	s := NewUserService(&MockDB{})
 
-	// Test valid username and password
-	err := s.SignUp("TestUser", "Password")
+	// Test correct signin info
+	token, err := s.SignIn("NerdBow", "password")
 
 	if err != nil {
 		t.Error(err)
 	}
 
-	// Test duplicate username
-	err = s.SignUp("TestUser", "Password")
+	// Test wrong signin info
+	token, err = s.SignIn("NerdBow", "pass")
 
-	if err == nil {
+	if token != "" || err != nil {
+		t.Error(err)
+	}
+}
+
+func TestSignUp(t *testing.T) {
+	s := NewUserService(&MockDB{make(map[string]struct{})})
+
+	// Test valid username and password
+	ok, err := s.SignUp("TestUser", "Password")
+
+	if !ok || err != nil {
 		t.Error(err)
 	}
 
-	var blankFieldsErr *BlankFieldsError
-	var invalidPasswordErr *InvalidPasswordError
+	// Test duplicate username
+	ok, err = s.SignUp("TestUser", "Password")
+
+	if ok || err == nil {
+		t.Error(err)
+	}
 
 	// Test blank username and password
-	err = s.SignUp("", "")
+	ok, err = s.SignUp("", "")
 
-	if !errors.As(err, &blankFieldsErr) {
+	if ok || !errors.Is(err, BlankFieldsErr) {
 		t.Error(err)
 	}
 
 	// Test blank password
-	err = s.SignUp("a", "")
+	ok, err = s.SignUp("a", "")
 
-	if !errors.As(err, &blankFieldsErr) {
+	if ok || !errors.Is(err, BlankFieldsErr) {
 		t.Error(err)
 	}
 
 	// Test blank username
-	err = s.SignUp("", "a")
+	ok, err = s.SignUp("", "a")
 
-	if !errors.As(err, &blankFieldsErr) {
+	if ok || !errors.Is(err, BlankFieldsErr) {
 		t.Error(err)
 	}
 
 	// Test invalid password
-	err = s.SignUp("a", "asdfjkl")
+	ok, err = s.SignUp("a", "asdfjkl")
 
-	if !errors.As(err, &invalidPasswordErr) {
+	if ok || !errors.Is(err, InvalidPasswordErr) {
 		t.Error(err)
 	}
 
 	// Test one letter username
-	err = s.SignUp("a", "asdfjkl;")
+	ok, err = s.SignUp("a", "asdfjkl;")
 
-	if errors.As(err, &invalidPasswordErr) {
+	if !ok || errors.Is(err, InvalidPasswordErr) {
 		t.Error(err)
 	}
 }
