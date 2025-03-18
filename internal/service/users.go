@@ -1,32 +1,21 @@
 package service
 
 import (
-	"encoding/base64"
-	"fmt"
-	"log"
+	"errors"
 	"os"
 	"strconv"
-
-	"crypto/rand"
+	"time"
 
 	"github.com/NerdBow/GrindersAPI/internal/database"
 	"github.com/NerdBow/GrindersAPI/internal/model"
-	"golang.org/x/crypto/argon2"
+	"github.com/NerdBow/GrindersAPI/internal/util"
+	"github.com/golang-jwt/jwt/v5"
 )
 
-type BlankFieldsError struct {
-}
-
-func (err *BlankFieldsError) Error() string {
-	return "Username and Password must not be blank."
-}
-
-type InvalidPasswordError struct {
-}
-
-func (err *InvalidPasswordError) Error() string {
-	return "Password must be 8 or more characters."
-}
+var (
+	BlankFieldsErr     = errors.New("Username and Password must not be blank")
+	InvalidPasswordErr = errors.New("Password must be 8 or more characters")
+)
 
 // The service which is used for user/ endpoint.
 type UserService struct {
