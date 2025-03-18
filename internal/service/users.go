@@ -27,36 +27,35 @@ func NewUserService(db database.UserDatabase) UserService {
 	return UserService{db: db}
 }
 
-// Generates a random byte slice with the specified length.
-func (s *UserService) generateSalt() []byte {
-
-	length, err := strconv.Atoi(os.Getenv("SALTLENGTH"))
-
-	if err != nil {
-		log.Fatal(err)
+// Signs up a user to the database.
+// Takes in a username and a password.
+//
+// Returns a bool if the signup was successful or not and an error if unsuccessful.
+func (s *UserService) SignUp(username string, password string) (bool, error) {
+	if username == "" || password == "" {
+		return false, BlankFieldsErr
 	}
 
-	salt := make([]byte, length)
-	rand.Read(salt)
-	return salt
+	if len(password) < 8 {
+		return false, InvalidPasswordErr
+	}
+
+	salt, err := util.GenerateSalt()
+
+	if err != nil {
+		return false, err
+	}
+
+	hash := util.GenerateHash(password, salt)
+
+	err = s.db.SignUp(username, hash)
+
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
 }
-
-// Takes in the password string and returns the argonid2 encoded version of it.
-func (s *UserService) generateHash(password string, saltBytes []byte) string {
-
-	hashTime, err := strconv.Atoi(os.Getenv("HASHTIME"))
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	hashMemory, err := strconv.Atoi(os.Getenv("HASHMEMORY"))
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	hashThreads, err := strconv.Atoi(os.Getenv("HASHTHREADS"))
 
 	if err != nil {
 		log.Fatal(err)
