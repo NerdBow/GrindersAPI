@@ -57,48 +57,48 @@ func (s *UserService) SignUp(username string, password string) (bool, error) {
 	return true, nil
 }
 
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	hashLength, err := strconv.Atoi(os.Getenv("HASHLENGHT"))
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	hashBytes := argon2.IDKey([]byte(password), saltBytes, uint32(hashTime), uint32(hashMemory*1024), uint8(hashThreads), uint32(hashLength))
-
-	salt := base64.RawStdEncoding.EncodeToString(saltBytes)
-	hash := base64.RawStdEncoding.EncodeToString(hashBytes)
-
-	return fmt.Sprintf("$argon2id$v=%d$m=%d,t=%d,p=%d$%s$%s", argon2.Version, hashMemory*1024, hashTime, hashThreads, salt, hash)
-}
-
-// Signs up a user to the database.
+// Signs in a user to the database and creates a JWT.
 // Takes in a username and a password.
 //
-// Returns a bool if the signup was successful or not and an error if unsuccessful.
-func (s *UserService) SignUp(username string, password string) error {
-	if username == "" || password == "" {
-		return &BlankFieldsError{}
+// Returns a string of the JWT and nil if successful.
+// If passwords is not correct, returns empty string and nil.
+// If errors occur, returns empty string and error.
+func (s *UserService) SignIn(username string, password string) (string, error) {
+	user, err := s.db.GetUserInfo(username)
+
+	if err != nil {
+		return "", err
 	}
 
-	if len(password) < 8 {
-		return &InvalidPasswordError{}
+	ok, err := util.CompareHashToPassword(user.Hash, password)
+
+	if err != nil {
+		return "", err
 	}
 
-	hash := s.generateHash(password, s.generateSalt())
-	err := s.db.SignUp(username, hash)
-	return err
-}
+	if !ok {
+		return "", nil
+	}
 
-// Signs in a user to the database and creates a session or passes back an API key. //TODO: decide if I want an API KEY or a Session based system
-// Takes in a username and a password.
-//
-// Returns a string of the API Key or session token and if any error an error is returned as well.
-func (s *UserService) SignIn(username string, password string) error {
-	return nil
+	expTime, err := strconv.Atoi(os.Getenv("JWTEXP"))
+
+	if err != nil {
+		return "", err
+	}
+
+	claims := jwt.MapClaims{
+		"userId":   user.UserId,
+		"username": user.Username,
+		"exp":      time.Now().Add(time.Minute * time.Duration(expTime)).Unix(),
+	}
+
+	jwtString, err := util.CreateToken(claims)
+
+	if err != nil {
+		return "", err
+	}
+
+	return jwtString, nil
 }
 
 // The service which is used for the user/{id}/endpoint.
