@@ -15,6 +15,44 @@ import (
 
 func HandleUserSignIn(s service.UserService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		decoder := json.NewDecoder(r.Body)
+		decoder.DisallowUnknownFields()
+		userInfo := struct {
+			Username string `json:"username"`
+			Password string `json:"password"`
+		}{}
+		err := decoder.Decode(&userInfo)
+
+		if err != nil {
+			middleware.HandleError(w, err, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		token, err := s.SignIn(userInfo.Username, userInfo.Password)
+
+		if err != nil {
+			middleware.HandleError(w, err, http.StatusInternalServerError, "Internal Server Error")
+			return
+		}
+
+		if token == "" {
+			middleware.HandleError(w, errors.New("Username or Password is incorrect"), http.StatusForbidden, "Username or Password is incorrect")
+			return
+		}
+
+		data := struct {
+			Token string `json:"token"`
+		}{token}
+
+		dataBytes, err := json.Marshal(data)
+
+		if err != nil {
+			middleware.HandleError(w, err, http.StatusInternalServerError, "Internal Server Error")
+			return
+		}
+
+		w.Write(dataBytes)
+		return
 	}
 }
 
