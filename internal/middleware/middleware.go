@@ -19,6 +19,7 @@ var (
 	UserKey ContextKey = 1
 )
 
+// Checks for JWT token in request Authorization header and parses it to a User struct which goes into the request's context.
 func CheckAuth(handler http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		authString := r.Header.Get("Authorization")
@@ -76,6 +77,7 @@ func CheckAuth(handler http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
+// Logs the IP of where the request is coming from and which endpoint they are requesting.
 func SetLog(handler http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("IP: %-22s Endpoint: %s\n", r.RemoteAddr, r.URL)
@@ -83,6 +85,7 @@ func SetLog(handler http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
+// Sets the header of the writer to application/json.
 func SetHeader(handler http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
@@ -90,6 +93,7 @@ func SetHeader(handler http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
+// Logs and writes out message for any error case in handlers.
 func HandleError(w http.ResponseWriter, err error, statusCode int, message string) {
 	if err != nil {
 		log.Printf("%s\n", err)
