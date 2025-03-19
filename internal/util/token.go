@@ -57,17 +57,3 @@ func GetClaimsFromToken(token string) (jwt.MapClaims, error) {
 	}
 	return claims, nil
 }
-
-func CheckTokenExpiration(claims jwt.MapClaims) (bool, error) {
-	exp, err := claims.GetExpirationTime()
-
-	if err != nil {
-		return false, err
-	}
-
-	if time.Now().After(exp.Time) {
-		return false, jwt.ErrTokenExpired
-	}
-
-	return true, nil
-}
