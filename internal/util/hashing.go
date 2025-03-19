@@ -12,6 +12,10 @@ import (
 	"golang.org/x/crypto/argon2"
 )
 
+// Generates a randomized byte slice which length is determined by an env SALTLENGTH.
+//
+// Returns byte slice and nil if no errors.
+// Returns nil and error if error occurs.
 func GenerateSalt() ([]byte, error) {
 	length, err := strconv.Atoi(os.Getenv("SALTLENGTH"))
 
@@ -32,7 +36,9 @@ func GenerateSalt() ([]byte, error) {
 	return salt, nil
 }
 
-// Takes in the password string and returns the argonid2 encoded version of it.
+// Generates argon2id hash of the saltword with the salt. All parameters for argon2id are from an .env file.
+//
+// Returns the string of the hashed password.
 func GenerateHash(password string, saltBytes []byte) string {
 
 	hashTime, err := strconv.Atoi(os.Getenv("HASHTIME"))
@@ -67,6 +73,7 @@ func GenerateHash(password string, saltBytes []byte) string {
 	return fmt.Sprintf("$argon2id$v=%d$m=%d,t=%d,p=%d$%s$%s", argon2.Version, hashMemory*1024, hashTime, hashThreads, salt, hash)
 }
 
+// Parses the argon2id hash and returns the salt, base64 hashed password, and error if any.
 func parseHash(hash string) ([]byte, string, error) {
 	parsedHash := strings.Split(hash, "$")
 	salt, err := base64.RawStdEncoding.DecodeString(parsedHash[len(parsedHash)-2])
@@ -77,6 +84,10 @@ func parseHash(hash string) ([]byte, string, error) {
 
 }
 
+// Checks if the given password has the same hash as the given argon2id hash.
+//
+// Returns true if hash and password match.
+// Returns false if they do not match.
 func CompareHashToPassword(hash string, password string) (bool, error) {
 	salt, _, err := parseHash(hash)
 
