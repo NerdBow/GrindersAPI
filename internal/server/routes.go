@@ -10,7 +10,8 @@ import (
 
 // addRoutes adds all the handlers for each route to the provided mux.
 func addRoutes(mux *http.ServeMux, userService service.UserService, userLogService service.UserLogService) {
-	mux.HandleFunc("POST /user/signup", middleware.SetLog(handler.HandleUserSignIn(userService)))
+	mux.HandleFunc("POST /user/signup", middleware.SetLog(handler.HandleUserSignUp(userService)))
+	mux.HandleFunc("POST /user/signin", middleware.SetHeader(middleware.SetLog(handler.HandleUserSignIn(userService))))
 
 	mux.HandleFunc("POST /user/{id}/log", middleware.SetLog(handler.HandleUserLogPost(userLogService)))
 	mux.HandleFunc("GET /user/{id}/log", middleware.SetLog(handler.HandleUserLogGet(userLogService)))

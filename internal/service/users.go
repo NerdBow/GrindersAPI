@@ -1,32 +1,21 @@
 package service
 
 import (
-	"encoding/base64"
-	"fmt"
-	"log"
+	"errors"
 	"os"
 	"strconv"
-
-	"crypto/rand"
+	"time"
 
 	"github.com/NerdBow/GrindersAPI/internal/database"
 	"github.com/NerdBow/GrindersAPI/internal/model"
-	"golang.org/x/crypto/argon2"
+	"github.com/NerdBow/GrindersAPI/internal/util"
+	"github.com/golang-jwt/jwt/v5"
 )
 
-type BlankFieldsError struct {
-}
-
-func (err *BlankFieldsError) Error() string {
-	return "Username and Password must not be blank."
-}
-
-type InvalidPasswordError struct {
-}
-
-func (err *InvalidPasswordError) Error() string {
-	return "Password must be 8 or more characters."
-}
+var (
+	BlankFieldsErr     = errors.New("Username and Password must not be blank")
+	InvalidPasswordErr = errors.New("Password must be 8 or more characters")
+)
 
 // The service which is used for user/ endpoint.
 type UserService struct {
@@ -38,79 +27,78 @@ func NewUserService(db database.UserDatabase) UserService {
 	return UserService{db: db}
 }
 
-// Generates a random byte slice with the specified length.
-func (s *UserService) generateSalt() []byte {
-
-	length, err := strconv.Atoi(os.Getenv("SALTLENGTH"))
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	salt := make([]byte, length)
-	rand.Read(salt)
-	return salt
-}
-
-// Takes in the password string and returns the argonid2 encoded version of it.
-func (s *UserService) generateHash(password string, saltBytes []byte) string {
-
-	hashTime, err := strconv.Atoi(os.Getenv("HASHTIME"))
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	hashMemory, err := strconv.Atoi(os.Getenv("HASHMEMORY"))
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	hashThreads, err := strconv.Atoi(os.Getenv("HASHTHREADS"))
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	hashLength, err := strconv.Atoi(os.Getenv("HASHLENGHT"))
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	hashBytes := argon2.IDKey([]byte(password), saltBytes, uint32(hashTime), uint32(hashMemory*1024), uint8(hashThreads), uint32(hashLength))
-
-	salt := base64.RawStdEncoding.EncodeToString(saltBytes)
-	hash := base64.RawStdEncoding.EncodeToString(hashBytes)
-
-	return fmt.Sprintf("$argon2id$v=%d$m=%d,t=%d,p=%d$%s$%s", argon2.Version, hashMemory*1024, hashTime, hashThreads, salt, hash)
-}
-
 // Signs up a user to the database.
 // Takes in a username and a password.
 //
 // Returns a bool if the signup was successful or not and an error if unsuccessful.
-func (s *UserService) SignUp(username string, password string) error {
+func (s *UserService) SignUp(username string, password string) (bool, error) {
 	if username == "" || password == "" {
-		return &BlankFieldsError{}
+		return false, BlankFieldsErr
 	}
 
 	if len(password) < 8 {
-		return &InvalidPasswordError{}
+		return false, InvalidPasswordErr
 	}
 
-	hash := s.generateHash(password, s.generateSalt())
-	err := s.db.SignUp(username, hash)
-	return err
+	salt, err := util.GenerateSalt()
+
+	if err != nil {
+		return false, err
+	}
+
+	hash := util.GenerateHash(password, salt)
+
+	err = s.db.SignUp(username, hash)
+
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
 }
 
-// Signs in a user to the database and creates a session or passes back an API key. //TODO: decide if I want an API KEY or a Session based system
+// Signs in a user to the database and creates a JWT.
 // Takes in a username and a password.
 //
-// Returns a string of the API Key or session token and if any error an error is returned as well.
-func (s *UserService) SignIn(username string, password string) error {
-	return nil
+// Returns a string of the JWT and nil if successful.
+// If passwords is not correct, returns empty string and nil.
+// If errors occur, returns empty string and error.
+func (s *UserService) SignIn(username string, password string) (string, error) {
+	user, err := s.db.GetUserInfo(username)
+
+	if err != nil {
+		return "", err
+	}
+
+	ok, err := util.CompareHashToPassword(user.Hash, password)
+
+	if err != nil {
+		return "", err
+	}
+
+	if !ok {
+		return "", nil
+	}
+
+	expTime, err := strconv.Atoi(os.Getenv("JWTEXP"))
+
+	if err != nil {
+		return "", err
+	}
+
+	claims := jwt.MapClaims{
+		"userId":   strconv.Itoa(user.UserId),
+		"username": user.Username,
+		"exp":      time.Now().Add(time.Minute * time.Duration(expTime)).Unix(),
+	}
+
+	jwtString, err := util.CreateToken(claims)
+
+	if err != nil {
+		return "", err
+	}
+
+	return jwtString, nil
 }
 
 // The service which is used for the user/{id}/endpoint.
