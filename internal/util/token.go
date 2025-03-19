@@ -4,7 +4,6 @@ import (
 	"errors"
 	"log"
 	"os"
-	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -13,6 +12,10 @@ var (
 	CanNotAccessJWTSecretErr = errors.New("Unable to get JWT secret from env")
 )
 
+// Create a JWT token given with the given claims.
+//
+// Returns the JWT and nil if no error occurs.
+// Returns empty string and an error if error occurs.
 func CreateToken(claimMap jwt.MapClaims) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claimMap)
 
@@ -33,6 +36,10 @@ func CreateToken(claimMap jwt.MapClaims) (string, error) {
 
 }
 
+// Parses a JWT token and gives back its claims.
+//
+// Returns the MapClaims of the jwt and nil if no error occurs.
+// Returns the nil and an error if no error occurs.
 func GetClaimsFromToken(token string) (jwt.MapClaims, error) {
 	key := func(token *jwt.Token) (any, error) {
 		secret := os.Getenv("JWTSECRET")
