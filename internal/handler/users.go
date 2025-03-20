@@ -88,7 +88,7 @@ func HandleUserSignUp(s service.UserService) http.HandlerFunc {
 			return
 		}
 
-		w.Write([]byte("Successfully created account"))
+		middleware.WriteResponse(w, http.StatusOK, "Successfuly created account")
 		log.Printf("New account created | Username: %s", userInfo.Username)
 	}
 }

@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"log"
 	"net/http"
@@ -93,11 +94,26 @@ func SetHeader(handler http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
+// Write out the message into the WriteResponse as a JSON
+func WriteResponse(w http.ResponseWriter, statusCode int, message string) {
+	w.WriteHeader(statusCode)
+	responseJson := struct {
+		Message string `json:"message"`
+	}{message}
+
+	messageBytes, err := json.Marshal(responseJson)
+
+	if err != nil {
+		log.Printf("Could not write error")
+	}
+
+	w.Write(messageBytes)
+}
+
 // Logs and writes out message for any error case in handlers.
 func HandleError(w http.ResponseWriter, err error, statusCode int, message string) {
 	if err != nil {
 		log.Printf("%s\n", err)
 	}
-	w.WriteHeader(statusCode)
-	w.Write([]byte(message))
+	WriteResponse(w, statusCode, message)
 }
