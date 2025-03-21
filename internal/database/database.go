@@ -15,7 +15,7 @@ type UserLogDatabase interface {
 	// Adds the given log into the database.
 	//
 	// Returns an int of the log's id in the database and an sql error if one occurs.
-	PostLog(model.Log) (int, error)
+	PostLog(model.Log) (int64, error)
 
 	// Retrives a specificed log from the database of a user by userId and logId.
 	//
@@ -126,28 +126,26 @@ func (db Sqlite3DB) CreateTables() error {
 	return nil
 }
 
-func (db Sqlite3DB) PostLog(log model.Log) (int, error) {
-	statement, err := db.Prepare("INSERT INTO 'logs' (date, duration, name, category, userId) VALUES(?, ?, ?, ?, ?);")
+func (db Sqlite3DB) PostLog(log model.Log) (int64, error) {
+	statement, err := db.Prepare("INSERT INTO 'logs' (date, duration, name, category, goal, userId) VALUES(?, ?, ?, ?, ?, ?);")
 
 	if err != nil {
 		return -1, err
 	}
 
-	result, err := statement.Exec(log.Date, log.Duration, log.Name, log.Category, log.UserId)
+	result, err := statement.Exec(log.Date, log.Duration, log.Name, log.Category, log.Goal, log.UserId)
 
 	if err != nil {
 		return -2, err
 	}
 
-	temp, err := result.LastInsertId()
-
-	id := int(temp)
+	logId, err := result.LastInsertId()
 
 	if err != nil {
 		return -3, err
 	}
 
-	return id, nil
+	return logId, nil
 }
 
 func (db Sqlite3DB) GetLog(userId int, id int) (model.Log, error) {
