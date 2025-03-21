@@ -1,0 +1,22 @@
+meta {
+  name: No Username
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{url}}{{port}}/user/signin
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "password": "asdf"
+  }
+}
+
+assert {
+  res.status: eq 400
+  res.body.message: eq Username field must be provided in the request json or not empty
+}

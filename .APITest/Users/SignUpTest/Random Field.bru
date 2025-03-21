@@ -1,0 +1,24 @@
+meta {
+  name: Random Field
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{url}}{{port}}/user/signup
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "",
+    "password": "",
+    "funny": ""
+  }
+}
+
+assert {
+  res.status: eq 400
+  res.body.message: startsWith json: unknown field
+}

@@ -1,0 +1,21 @@
+meta {
+  name: No Fields
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{url}}{{port}}/user/signin
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+  }
+}
+
+assert {
+  res.status: eq 400
+  res.body.message: eq Username field must be provided in the request json or not empty
+}
