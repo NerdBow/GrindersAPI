@@ -148,10 +148,10 @@ func (db Sqlite3DB) PostLog(log model.Log) (int64, error) {
 	return logId, nil
 }
 
-func (db Sqlite3DB) GetLog(userId int, id int) (model.Log, error) {
+func (db Sqlite3DB) GetLog(userId int, id int64) (model.Log, error) {
 	log := model.Log{}
 
-	row, err := db.Query("SELECT id, date, duration, name, category, userId FROM 'logs' WHERE id = ? AND userId = ?;", id, userId)
+	row, err := db.Query("SELECT id, date, duration, name, category, goal, userId FROM 'logs' WHERE id = ? AND userId = ?;", id, userId)
 
 	if err != nil {
 		return log, err
@@ -160,10 +160,10 @@ func (db Sqlite3DB) GetLog(userId int, id int) (model.Log, error) {
 	defer row.Close()
 
 	if !row.Next() {
-		return log, errors.New("There was no row with that primary key.")
+		return log, errors.New("Unable to find log with the id for the user")
 	}
 
-	err = row.Scan(&log.Id, &log.Date, &log.Duration, &log.Name, &log.Category, &log.UserId)
+	err = row.Scan(&log.Id, &log.Date, &log.Duration, &log.Name, &log.Category, &log.Goal, &log.UserId)
 
 	if err != nil {
 		return log, err
