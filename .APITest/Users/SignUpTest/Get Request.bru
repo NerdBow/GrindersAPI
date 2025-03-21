@@ -1,0 +1,16 @@
+meta {
+  name: Get Request
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{url}}{{port}}/user/signup
+  body: json
+  auth: none
+}
+
+assert {
+  res.status: eq 405
+  res.body: startsWith Method Not Allowed
+}

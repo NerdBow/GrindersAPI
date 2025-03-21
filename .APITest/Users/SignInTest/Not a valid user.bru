@@ -1,0 +1,23 @@
+meta {
+  name: Not a valid user
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{url}}{{port}}/user/signin
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "BobAndy",
+    "password": "password"
+  }
+}
+
+assert {
+  res.status: eq 500
+  res.body.message: eq Internal Server Error
+}

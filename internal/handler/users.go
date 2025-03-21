@@ -13,6 +13,11 @@ import (
 	"github.com/NerdBow/GrindersAPI/internal/service"
 )
 
+var (
+	NoUsernameFieldErr = errors.New("Username field must be provided in the request json or not empty")
+	NoPasswordFieldErr = errors.New("Password field must be provided in the request json or not empty")
+)
+
 func HandleUserSignIn(s service.UserService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		decoder := json.NewDecoder(r.Body)
@@ -25,6 +30,16 @@ func HandleUserSignIn(s service.UserService) http.HandlerFunc {
 
 		if err != nil {
 			middleware.HandleError(w, err, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		if userInfo.Username == "" {
+			middleware.HandleError(w, NoUsernameFieldErr, http.StatusBadRequest, NoUsernameFieldErr.Error())
+			return
+		}
+
+		if userInfo.Password == "" {
+			middleware.HandleError(w, NoPasswordFieldErr, http.StatusBadRequest, NoPasswordFieldErr.Error())
 			return
 		}
 
