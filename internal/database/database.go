@@ -11,6 +11,16 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+type LogOrder uint8
+
+const (
+	PAGE_ROW_COUNT        int      = 20
+	ASC_DATE_ASC_DURATION LogOrder = 1
+	ASC_DATE_DES_DURATION LogOrder = 2
+	DES_DATE_ASC_DURATION LogOrder = 3
+	DES_DATE_DES_DURATION LogOrder = 4
+)
+
 type UserLogDatabase interface {
 	// Adds the given log into the database.
 	//
