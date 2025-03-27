@@ -3,7 +3,7 @@ package model
 // A struct of the information contatined in each log.
 // Date and Duration are int64 of seconds.
 type Log struct {
-	Id       int    `json:"id"`
+	Id       int64  `json:"id"`
 	Date     int64  `json:"date"`
 	Duration int64  `json:"duration"`
 	Name     string `json:"name"`
@@ -61,6 +61,6 @@ func (log *Log) Merge(otherLog Log) {
 	}
 
 	if log.Goal == "" {
-		log.Category = otherLog.Category
+		log.Goal = otherLog.Goal
 	}
 }
