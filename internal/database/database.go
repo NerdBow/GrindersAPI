@@ -232,16 +232,15 @@ func (db Sqlite3DB) UpdateLog(newLog model.Log) (bool, error) {
 
 	newLog.Merge(log)
 
-	statement, err := db.Prepare("UPDATE 'logs' SET date = ?, duration = ?, name = ?, category = ? WHERE id = ? AND userId = ?;")
+	statement, err := db.Prepare("UPDATE 'logs' SET date = ?, duration = ?, name = ?, category = ?, goal = ? WHERE id = ? AND userId = ?;")
 
 	if err != nil {
 		return false, err
 	}
 
-	result, err := statement.Exec(newLog.Date, newLog.Duration, newLog.Name, newLog.Category, newLog.Id, newLog.UserId)
+	_, err = statement.Exec(newLog.Date, newLog.Duration, newLog.Name, newLog.Category, newLog.Goal, newLog.Id, newLog.UserId)
 
 	if err != nil {
-		fmt.Println(result)
 		return false, err
 	}
 
