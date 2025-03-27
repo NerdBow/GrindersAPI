@@ -31,7 +31,7 @@ type UserLogDatabase interface {
 	//
 	// Returns log struct of the specificed log if successful.
 	// Else, it returns an empty log and the error.
-	GetLog(int, int) (model.Log, error)
+	GetLog(int, int64) (model.Log, error)
 
 	// Retrives a slice of 10 logs specified by the parameters of:
 	//
@@ -39,7 +39,7 @@ type UserLogDatabase interface {
 	//
 	// Returns a pointer of the slice of logs if successful.
 	// Else, it returns a pointer with the an empty slice of logs and the error.
-	GetLogs(int, int, int64, string, string) (*[]model.Log, error)
+	GetLogs(int, uint, int64, int64, string, LogOrder) ([]model.Log, error)
 
 	// Update the specified log with new information in the given log.
 	//
