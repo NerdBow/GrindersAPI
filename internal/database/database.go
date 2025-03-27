@@ -182,39 +182,45 @@ func (db Sqlite3DB) GetLog(userId int, id int64) (model.Log, error) {
 	return log, nil
 }
 
-func (db Sqlite3DB) GetLogs(userId int, page int, startTime int64, timeLength string, category string) (*[]model.Log, error) {
-	logsList := make([]model.Log, 0, 10)
+func (db Sqlite3DB) GetLogs(userId int, page uint, startTime int64, endTime int64, category string, ordering LogOrder) ([]model.Log, error) {
+	logsList := make([]model.Log, 0, PAGE_ROW_COUNT)
 
-	query := "SELECT id, date, duration, name, category, userId FROM 'logs' WHERE userId = ? AND (? = 0 OR date >= ?) AND (? = 0 OR date <= ?) AND (? = '' OR category = ?) ORDER BY date DESC LIMIT ?, ?;"
+	query := "SELECT id, date, duration, name, category, goal, userId FROM 'logs' WHERE userId = ? AND (? = 0 OR date >= ?) AND (? = 0 OR date <= ?) AND (? = '' OR category = ?)"
 
-	var endTime int64
-	switch timeLength {
-	case "DAY":
-		endTime = startTime + int64(time.Hour*24)
-	case "WEEK":
-		endTime = startTime + int64(time.Hour*24*7)
-	case "MONTH":
-		endTime = startTime + int64(time.Hour*24*7*30)
+	switch ordering {
+	case ASC_DATE_ASC_DURATION:
+		query += " ORDER BY date ASC, duration ASC"
+
+	case ASC_DATE_DES_DURATION:
+		query += " ORDER BY date ASC, duration DESC"
+
+	case DES_DATE_ASC_DURATION:
+		query += " ORDER BY date DESC, duration ASC"
+
+	case DES_DATE_DES_DURATION:
+		query += " ORDER BY date DESC, duration DESC"
 	}
+
+	query += " LIMIT ?, ?;"
 
 	rows, err := db.Query(query, userId, startTime, startTime, endTime, endTime, category, category, ((page - 1) * 10), page*10)
 
 	if err != nil {
-		return &logsList, err
+		return logsList, err
 	}
 
 	defer rows.Close()
 
 	for rows.Next() {
 		rowLog := model.Log{}
-		err = rows.Scan(&rowLog.Id, &rowLog.Date, &rowLog.Duration, &rowLog.Name, &rowLog.Category, &rowLog.UserId)
+		err = rows.Scan(&rowLog.Id, &rowLog.Date, &rowLog.Duration, &rowLog.Name, &rowLog.Category, &rowLog.Goal, &rowLog.UserId)
 		if err != nil {
-			return &logsList, err
+			return logsList, err
 		}
 		logsList = append(logsList, rowLog)
 	}
 
-	return &logsList, nil
+	return logsList, nil
 }
 
 func (db Sqlite3DB) UpdateLog(newLog model.Log) (bool, error) {
