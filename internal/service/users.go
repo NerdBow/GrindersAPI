@@ -115,7 +115,7 @@ func NewUserLogService(db database.UserLogDatabase) UserLogService {
 // Takes in a log struct of the log to be inserted in the database.
 //
 // Returns the id of the inserted log if successful. -1 and an error if unsuccessful.
-func (s *UserLogService) AddUserLog(log model.Log) (int, error) {
+func (s *UserLogService) AddUserLog(log model.Log) (int64, error) {
 	return s.db.PostLog(log)
 }
 
@@ -123,7 +123,7 @@ func (s *UserLogService) AddUserLog(log model.Log) (int, error) {
 // Takes in the userId and the logId
 //
 // Returns a log struct of the requested log. Empty struct and an error if unsuccessful.
-func (s *UserLogService) GetUserLog(userId int, logId int) (model.Log, error) {
+func (s *UserLogService) GetUserLog(userId int, logId int64) (model.Log, error) {
 	return s.db.GetLog(userId, logId)
 }
 
@@ -131,8 +131,8 @@ func (s *UserLogService) GetUserLog(userId int, logId int) (model.Log, error) {
 // Takes in the userId, age, startTime, timeLength, and category
 //
 // Returns a slice log struct of the requested log. nil and an error if unsuccessful.
-func (s *UserLogService) GetUserLogs(userId int, page int, startTime int64, timeLength string, category string) (*[]model.Log, error) {
-	return s.db.GetLogs(userId, page, startTime, timeLength, category)
+func (s *UserLogService) GetUserLogs(userId int, page int, startTime int64, endTime int64, category string, order database.LogOrder) ([]model.Log, error) {
+	return s.db.GetLogs(userId, uint(page), startTime, endTime, category, order)
 }
 
 // Updates a log to the database.
