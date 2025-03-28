@@ -57,6 +57,82 @@ func TestMain(m *testing.M) {
 	m.Run()
 }
 
+func TestAddUserLog(t *testing.T) {
+	s := NewUserLogService(&MockDB{})
+
+	// Test correct log
+	log := model.Log{Id: 10, Date: 10000, Duration: 3600, Name: "Calculas", Category: "Study", Goal: "Finish reviewing for test", UserId: 1}
+
+	id, err := s.AddUserLog(log)
+
+	if err != nil || id != 20 {
+		t.Error(err)
+	}
+
+	// Test invalid id
+	log = model.Log{Id: -1, Date: 10000, Duration: 3600, Name: "Calculas", Category: "Study", Goal: "Finish reviewing for test", UserId: 1}
+
+	id, err = s.AddUserLog(log)
+
+	if err == nil || id != -1 {
+		t.Error(err)
+	}
+
+	// Test invalid date
+	log = model.Log{Id: 10, Date: -10000, Duration: 3600, Name: "Calculas", Category: "Study", Goal: "Finish reviewing for test", UserId: 1}
+
+	id, err = s.AddUserLog(log)
+
+	if err == nil || id != -1 {
+		t.Error(err)
+	}
+
+	// Test invalid duration
+	log = model.Log{Id: 10, Date: -10000, Duration: 0, Name: "Calculas", Category: "Study", Goal: "Finish reviewing for test", UserId: 1}
+
+	id, err = s.AddUserLog(log)
+
+	if err == nil || id != -1 {
+		t.Error(err)
+	}
+
+	// Test blank name
+	log = model.Log{Id: 10, Date: -10000, Duration: 3600, Name: "", Category: "Study", Goal: "Finish reviewing for test", UserId: 1}
+
+	id, err = s.AddUserLog(log)
+
+	if err == nil || id != -1 {
+		t.Error(err)
+	}
+
+	// Test blank category
+	log = model.Log{Id: 10, Date: -10000, Duration: 3600, Name: "Calculas", Category: "", Goal: "Finish reviewing for test", UserId: 1}
+
+	id, err = s.AddUserLog(log)
+
+	if err == nil || id != -1 {
+		t.Error(err)
+	}
+
+	// Test blank goal
+	log = model.Log{Id: 10, Date: -10000, Duration: 3600, Name: "Calculas", Category: "Study", Goal: "", UserId: 1}
+
+	id, err = s.AddUserLog(log)
+
+	if err == nil || id != -1 {
+		t.Error(err)
+	}
+
+	// Test blank goal
+	log = model.Log{Id: 10, Date: -10000, Duration: 3600, Name: "Calculas", Category: "Study", Goal: "Finish reviewing for test", UserId: 0}
+
+	id, err = s.AddUserLog(log)
+
+	if err == nil || id != -1 {
+		t.Error(err)
+	}
+}
+
 func TestSignin(t *testing.T) {
 	s := NewUserService(&MockDB{})
 
