@@ -168,7 +168,7 @@ func TestGetUserLogs(t *testing.T) {
 	// Test invalid logId
 	logs, err = s.GetUserLogs(1, -10, 1, 0, 0, "", database.ASC_DATE_ASC_DURATION)
 
-	if !errors.Is(err, InvalidLogIdQuery) || len(logs) != 0 {
+	if !errors.Is(err, InvalidLogIdQueryErr) || len(logs) != 0 {
 		t.Error("There was no error returns when negative logId was inputted")
 	}
 
@@ -193,14 +193,14 @@ func TestGetUserLogs(t *testing.T) {
 	// Test invalid startTime
 	logs, err = s.GetUserLogs(1, 0, 1, -1, 0, "", database.ASC_DATE_ASC_DURATION)
 
-	if !errors.Is(err, InvalidTime) || len(logs) != 0 {
+	if !errors.Is(err, InvalidTimeErr) || len(logs) != 0 {
 		t.Error(err)
 	}
 
 	// Test invalid endTime
 	logs, err = s.GetUserLogs(1, 0, 1, 10, -1, "", database.ASC_DATE_ASC_DURATION)
 
-	if !errors.Is(err, InvalidTime) || len(logs) != 0 {
+	if !errors.Is(err, InvalidTimeErr) || len(logs) != 0 {
 		t.Error(err)
 	}
 }
