@@ -16,6 +16,9 @@ import (
 var (
 	BlankFieldsErr     = errors.New("Username and Password must not be blank")
 	InvalidPasswordErr = errors.New("Password must be 8 or more characters")
+	InvalidPageErr     = errors.New("Page must be greater than 0")
+	InvalidTime        = errors.New("Time must be greater than 0 if filtering by time")
+	InvalidLogId       = errors.New("LogId must be greater than 0 if quering for a single log and equal to 0 if querying for multiple logs")
 )
 
 // The service which is used for user/ endpoint.
@@ -131,20 +134,49 @@ func (s *UserLogService) AddUserLog(log model.Log) (int64, error) {
 	return id, nil
 }
 
-// Retrives a log to the database.
-// Takes in the userId and the logId
-//
-// Returns a log struct of the requested log. Empty struct and an error if unsuccessful.
-func (s *UserLogService) GetUserLog(userId int, logId int64) (model.Log, error) {
-	return s.db.GetLog(userId, logId)
-}
-
 // Retrives a slice of logs of a user to the database.
-// Takes in the userId, age, startTime, timeLength, and category
+// Takes in the userId, logId, page, startTime, endTime, category, and order.
+// If logId is greater than 0 then function will return a single log that matches the id.
 //
 // Returns a slice log struct of the requested log. nil and an error if unsuccessful.
-func (s *UserLogService) GetUserLogs(userId int, page int, startTime int64, endTime int64, category string, order database.LogOrder) ([]model.Log, error) {
-	return s.db.GetLogs(userId, uint(page), startTime, endTime, category, order)
+func (s *UserLogService) GetUserLogs(userId int, logId int64, page uint, startTime int64, endTime int64, category string, order database.LogOrder) ([]model.Log, error) {
+	var logs []model.Log
+
+	if logId < 0 {
+		return logs, InvalidLogId
+	}
+
+	if page <= 0 {
+		return logs, InvalidPageErr
+	}
+
+	if startTime < 0 {
+		return logs, InvalidTime
+	}
+
+	if endTime < 0 {
+		return logs, InvalidTime
+	}
+
+	if logId > 0 {
+		log, err := s.db.GetLog(userId, logId)
+
+		if err != nil {
+			return logs, err
+		}
+
+		logs = append(logs, log)
+
+		return logs, nil
+	}
+
+	filteredLogs, err := s.db.GetLogs(userId, page, startTime, endTime, category, order)
+
+	if err != nil {
+		return logs, err
+	}
+
+	return filteredLogs, nil
 }
 
 // Updates a log to the database.
