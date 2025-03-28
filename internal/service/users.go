@@ -186,7 +186,28 @@ func (s *UserLogService) GetUserLogs(userId int, logId int64, page uint, startTi
 //
 // Returns true and nil if update was successful. false and an error if not.
 func (s *UserLogService) UpdateUserLog(log model.Log) (bool, error) {
-	return s.db.UpdateLog(log)
+	problems := log.Validate()
+	for field, err := range problems {
+		if field == "id" || field == "userId" {
+			return false, err
+		}
+	}
+
+	if log.Date < 0 {
+		return false, UnmergableDateErr
+	}
+
+	if log.Duration < 0 {
+		return false, UnmergableDurationErr
+	}
+
+	result, err := s.db.UpdateLog(log)
+
+	if err != nil || !result {
+		return false, err
+	}
+
+	return result, nil
 }
 
 // Deletes a log of the user in the database.
