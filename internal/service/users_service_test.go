@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/NerdBow/GrindersAPI/internal/database"
 	"github.com/NerdBow/GrindersAPI/internal/model"
 	"github.com/joho/godotenv"
 )
@@ -23,6 +24,28 @@ func (db *MockDB) SignUp(username string, password string) error {
 
 func (db *MockDB) GetUserInfo(username string) (model.User, error) {
 	return model.User{Username: "NerdBow", Hash: "$argon2id$v=19$m=65536,t=1,p=4$c2FsdHNhbHQ$SRzrpBkxb+Cwwr5PQJL2pIGh9G59lfzlgOj3RRV73LKQYf2HycaaTY5yHimy7mnlWCY"}, nil
+}
+
+func (db *MockDB) PostLog(log model.Log) (int64, error) {
+	return 20, nil
+}
+
+func (db *MockDB) GetLog(userId int, id int64) (model.Log, error) {
+	var log model.Log
+	return log, nil
+}
+
+func (db *MockDB) GetLogs(userId int, page uint, startTime int64, endTime int64, category string, order database.LogOrder) ([]model.Log, error) {
+	logs := make([]model.Log, 0, 10)
+	return logs, nil
+}
+
+func (db *MockDB) UpdateLog(log model.Log) (bool, error) {
+	return true, nil
+}
+
+func (db *MockDB) DeleteLog(userId int, id int64) (bool, error) {
+	return true, nil
 }
 
 func TestMain(m *testing.M) {
