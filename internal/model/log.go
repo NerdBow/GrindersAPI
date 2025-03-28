@@ -17,13 +17,13 @@ type Log struct {
 func (log Log) Validate() map[string]string {
 	problems := make(map[string]string)
 
-	if log.Id == 0 {
+	if log.Id <= 0 {
 		problems["id"] = "No id"
 	}
-	if log.Date == 0 {
+	if log.Date <= 0 {
 		problems["date"] = "No date"
 	}
-	if log.Duration == 0 {
+	if log.Duration <= 0 {
 		problems["duration"] = "No duration"
 	}
 	if log.Name == "" {
@@ -35,7 +35,7 @@ func (log Log) Validate() map[string]string {
 	if log.Goal == "" {
 		problems["goal"] = "No goal"
 	}
-	if log.UserId == 0 {
+	if log.UserId <= 0 {
 		problems["userId"] = "No userId"
 	}
 
