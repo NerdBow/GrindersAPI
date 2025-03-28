@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"strconv"
 	"time"
@@ -116,7 +117,18 @@ func NewUserLogService(db database.UserLogDatabase) UserLogService {
 //
 // Returns the id of the inserted log if successful. -1 and an error if unsuccessful.
 func (s *UserLogService) AddUserLog(log model.Log) (int64, error) {
-	return s.db.PostLog(log)
+	problems := log.Validate()
+	if len(problems) != 0 {
+		return -1, errors.New(fmt.Sprintf("Problems: %v", problems))
+	}
+
+	id, err := s.db.PostLog(log)
+
+	if err != nil {
+		return -1, err
+	}
+
+	return id, nil
 }
 
 // Retrives a log to the database.
@@ -147,6 +159,6 @@ func (s *UserLogService) UpdateUserLog(log model.Log) (bool, error) {
 // Takes in a userId and the logId.
 //
 // Returns true and nil if delete was successful. false and an error if not.
-func (s *UserLogService) DeleteUserLog(userId int, logId int) (bool, error) {
+func (s *UserLogService) DeleteUserLog(userId int, logId int64) (bool, error) {
 	return s.db.DeleteLog(userId, logId)
 }
