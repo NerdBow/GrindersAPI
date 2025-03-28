@@ -18,7 +18,6 @@ var (
 	InvalidPasswordErr = errors.New("Password must be 8 or more characters")
 	InvalidPageErr     = errors.New("Page must be greater than 0")
 	InvalidTime        = errors.New("Time must be greater than 0 if filtering by time")
-	InvalidLogId       = errors.New("LogId must be greater than 0")
 	InvalidLogIdQuery  = errors.New("LogId must be greater than 0 for single logs or equal to 0 for multiple logs")
 )
 
