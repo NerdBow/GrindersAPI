@@ -36,7 +36,7 @@ func (db *MockDB) GetLog(userId int, id int64) (model.Log, error) {
 }
 
 func (db *MockDB) GetLogs(userId int, page uint, startTime int64, endTime int64, category string, order database.LogOrder) ([]model.Log, error) {
-	logs := make([]model.Log, 0, 10)
+	logs := make([]model.Log, 10, 10)
 	return logs, nil
 }
 
@@ -55,6 +55,60 @@ func TestMain(m *testing.M) {
 		fmt.Println("env could not load")
 	}
 	m.Run()
+}
+
+func TestGetUserLogs(t *testing.T) {
+	s := NewUserLogService(&MockDB{})
+
+	// Test single log retrival
+	logs, err := s.GetUserLogs(1, 1, 1, 0, 0, "", database.ASC_DATE_ASC_DURATION)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if len(logs) != 1 {
+		t.Error("There was more than one log returned for the GetLog by id")
+	}
+
+	// Test invalid logId
+	logs, err = s.GetUserLogs(1, -10, 1, 0, 0, "", database.ASC_DATE_ASC_DURATION)
+
+	if err == nil && len(logs) != 0 {
+		t.Error("There was no error returns when negative logId was inputted")
+	}
+
+	// Test multiple log retrival
+	logs, err = s.GetUserLogs(1, 0, 1, 0, 0, "", database.ASC_DATE_ASC_DURATION)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if len(logs) != 10 {
+		t.Error("There was less than 10 logs returned")
+	}
+
+	// Test invalid page
+	logs, err = s.GetUserLogs(1, 0, 0, 0, 0, "", database.ASC_DATE_ASC_DURATION)
+
+	if !errors.Is(err, InvalidPageErr) || len(logs) != 0 {
+		t.Error(err)
+	}
+
+	// Test invalid startTime
+	logs, err = s.GetUserLogs(1, 0, 1, -1, 0, "", database.ASC_DATE_ASC_DURATION)
+
+	if !errors.Is(err, InvalidTime) || len(logs) != 0 {
+		t.Error(err)
+	}
+
+	// Test invalid endTime
+	logs, err = s.GetUserLogs(1, 0, 1, 10, -1, "", database.ASC_DATE_ASC_DURATION)
+
+	if !errors.Is(err, InvalidTime) || len(logs) != 0 {
+		t.Error(err)
+	}
 }
 
 func TestAddUserLog(t *testing.T) {
