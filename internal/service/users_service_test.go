@@ -57,6 +57,100 @@ func TestMain(m *testing.M) {
 	m.Run()
 }
 
+func TestUpdateUserLog(t *testing.T) {
+	s := NewUserLogService(&MockDB{})
+
+	// Test valid input
+	log := model.Log{Id: 10, Date: 10000, Duration: 3600, Name: "Calculas", Category: "Study", Goal: "Finish reviewing for test", UserId: 1}
+
+	result, err := s.UpdateUserLog(log)
+
+	if err != nil || !result {
+		t.Error(err)
+	}
+
+	// Test blank date
+	log = model.Log{Id: 10, Date: 0, Duration: 3600, Name: "Calculas", Category: "Study", Goal: "Finish reviewing for test", UserId: 1}
+
+	result, err = s.UpdateUserLog(log)
+
+	if err != nil || !result {
+		t.Error(err)
+	}
+
+	// Test blank duration
+	log = model.Log{Id: 10, Date: 10, Duration: 0, Name: "Calculas", Category: "Study", Goal: "Finish reviewing for test", UserId: 1}
+
+	result, err = s.UpdateUserLog(log)
+
+	if err != nil || !result {
+		t.Error(err)
+	}
+
+	// Test blank name
+	log = model.Log{Id: 10, Date: 10, Duration: 100, Name: "", Category: "Study", Goal: "Finish reviewing for test", UserId: 1}
+
+	result, err = s.UpdateUserLog(log)
+
+	if err != nil || !result {
+		t.Error(err)
+	}
+
+	// Test blank category
+	log = model.Log{Id: 10, Date: 10, Duration: 100, Name: "Calculas", Category: "", Goal: "Finish reviewing for test", UserId: 1}
+
+	result, err = s.UpdateUserLog(log)
+
+	if err != nil || !result {
+		t.Error(err)
+	}
+
+	// Test blank goal
+	log = model.Log{Id: 10, Date: 10, Duration: 100, Name: "Calculas", Category: "Study", Goal: "", UserId: 1}
+
+	result, err = s.UpdateUserLog(log)
+
+	if err != nil || !result {
+		t.Error(err)
+	}
+
+	// Test invalid id
+	log = model.Log{Id: 0, Date: 10000, Duration: 3600, Name: "Calculas", Category: "Study", Goal: "Finish reviewing for test", UserId: 1}
+
+	result, err = s.UpdateUserLog(log)
+
+	if !errors.Is(err, model.InvalidIdErr) || result {
+		t.Error(err)
+	}
+
+	// Test invalid date
+	log = model.Log{Id: 1, Date: -1, Duration: 3600, Name: "Calculas", Category: "Study", Goal: "Finish reviewing for test", UserId: 1}
+
+	result, err = s.UpdateUserLog(log)
+
+	if !errors.Is(err, model.InvalidDateErr) || result {
+		t.Error(err)
+	}
+
+	// Test invalid duration
+	log = model.Log{Id: 1, Date: 100, Duration: -1, Name: "Calculas", Category: "Study", Goal: "Finish reviewing for test", UserId: 1}
+
+	result, err = s.UpdateUserLog(log)
+
+	if !errors.Is(err, model.InvalidDurationErr) || result {
+		t.Error(err)
+	}
+
+	// Test invalid user id
+	log = model.Log{Id: 1, Date: 100, Duration: 3600, Name: "Calculas", Category: "Study", Goal: "Finish reviewing for test", UserId: -1}
+
+	result, err = s.UpdateUserLog(log)
+
+	if !errors.Is(err, model.InvalidUserIdErr) || result {
+		t.Error(err)
+	}
+}
+
 func TestGetUserLogs(t *testing.T) {
 	s := NewUserLogService(&MockDB{})
 
