@@ -14,11 +14,13 @@ import (
 )
 
 var (
-	BlankFieldsErr     = errors.New("Username and Password must not be blank")
-	InvalidPasswordErr = errors.New("Password must be 8 or more characters")
-	InvalidPageErr     = errors.New("Page must be greater than 0")
+	BlankFieldsErr        = errors.New("Username and Password must not be blank")
+	InvalidPasswordErr    = errors.New("Password must be 8 or more characters")
+	InvalidPageErr        = errors.New("Page must be greater than 0")
 	InvalidTimeErr        = errors.New("Time must be greater than 0 if filtering by time")
 	InvalidLogIdQueryErr  = errors.New("LogId must be greater than 0 for single logs or equal to 0 for multiple logs")
+	UnmergableDurationErr = errors.New("Duration must not be negative for a merge log")
+	UnmergableDateErr     = errors.New("Date must not be negative for a merge log")
 )
 
 // The service which is used for user/ endpoint.

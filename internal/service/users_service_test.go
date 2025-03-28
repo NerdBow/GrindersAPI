@@ -128,7 +128,7 @@ func TestUpdateUserLog(t *testing.T) {
 
 	result, err = s.UpdateUserLog(log)
 
-	if !errors.Is(err, model.InvalidDateErr) || result {
+	if !errors.Is(err, UnmergableDateErr) || result {
 		t.Error(err)
 	}
 
@@ -137,7 +137,7 @@ func TestUpdateUserLog(t *testing.T) {
 
 	result, err = s.UpdateUserLog(log)
 
-	if !errors.Is(err, model.InvalidDurationErr) || result {
+	if !errors.Is(err, UnmergableDurationErr) || result {
 		t.Error(err)
 	}
 
