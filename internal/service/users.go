@@ -18,7 +18,8 @@ var (
 	InvalidPasswordErr = errors.New("Password must be 8 or more characters")
 	InvalidPageErr     = errors.New("Page must be greater than 0")
 	InvalidTime        = errors.New("Time must be greater than 0 if filtering by time")
-	InvalidLogId       = errors.New("LogId must be greater than 0 if quering for a single log and equal to 0 if querying for multiple logs")
+	InvalidLogId       = errors.New("LogId must be greater than 0")
+	InvalidLogIdQuery  = errors.New("LogId must be greater than 0 for single logs or equal to 0 for multiple logs")
 )
 
 // The service which is used for user/ endpoint.
@@ -143,7 +144,7 @@ func (s *UserLogService) GetUserLogs(userId int, logId int64, page uint, startTi
 	var logs []model.Log
 
 	if logId < 0 {
-		return logs, InvalidLogId
+		return logs, InvalidLogIdQuery
 	}
 
 	if page <= 0 {
