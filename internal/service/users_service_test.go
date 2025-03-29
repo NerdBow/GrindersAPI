@@ -57,6 +57,32 @@ func TestMain(m *testing.M) {
 	m.Run()
 }
 
+func TestDeleteUserLog(t *testing.T) {
+	s := NewUserLogService(&MockDB{})
+
+	// Test valid input
+	result, err := s.DeleteUserLog(1, 1)
+
+	if err != nil || !result {
+		t.Error(err)
+	}
+
+	// Test invalid id
+	result, err = s.DeleteUserLog(1, 0)
+
+	if !errors.Is(err, model.InvalidIdErr) || result {
+		t.Error(err)
+	}
+
+	// Test invalid userId
+	result, err = s.DeleteUserLog(0, 1)
+
+	if !errors.Is(err, model.InvalidUserIdErr) || result {
+		t.Error(err)
+	}
+
+}
+
 func TestUpdateUserLog(t *testing.T) {
 	s := NewUserLogService(&MockDB{})
 
