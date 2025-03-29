@@ -2,7 +2,6 @@ package service
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"strconv"
 	"time"
@@ -123,8 +122,8 @@ func NewUserLogService(db database.UserLogDatabase) UserLogService {
 // Returns the id of the inserted log if successful. -1 and an error if unsuccessful.
 func (s *UserLogService) AddUserLog(log model.Log) (int64, error) {
 	problems := log.Validate()
-	if len(problems) != 0 {
-		return -1, errors.New(fmt.Sprintf("Problems: %v", problems))
+	for _, err := range problems {
+		return -1, err
 	}
 
 	id, err := s.db.PostLog(log)

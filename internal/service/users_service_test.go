@@ -248,7 +248,7 @@ func TestAddUserLog(t *testing.T) {
 
 	id, err = s.AddUserLog(log)
 
-	if err == nil || id != -1 {
+	if !errors.Is(err, model.InvalidIdErr) || id != -1 {
 		t.Error(err)
 	}
 
@@ -257,52 +257,52 @@ func TestAddUserLog(t *testing.T) {
 
 	id, err = s.AddUserLog(log)
 
-	if err == nil || id != -1 {
+	if !errors.Is(err, model.InvalidDateErr) || id != -1 {
 		t.Error(err)
 	}
 
 	// Test invalid duration
-	log = model.Log{Id: 10, Date: -10000, Duration: 0, Name: "Calculas", Category: "Study", Goal: "Finish reviewing for test", UserId: 1}
+	log = model.Log{Id: 10, Date: 10000, Duration: 0, Name: "Calculas", Category: "Study", Goal: "Finish reviewing for test", UserId: 1}
 
 	id, err = s.AddUserLog(log)
 
-	if err == nil || id != -1 {
+	if !errors.Is(err, model.InvalidDurationErr) || id != -1 {
 		t.Error(err)
 	}
 
 	// Test blank name
-	log = model.Log{Id: 10, Date: -10000, Duration: 3600, Name: "", Category: "Study", Goal: "Finish reviewing for test", UserId: 1}
+	log = model.Log{Id: 10, Date: 10000, Duration: 3600, Name: "", Category: "Study", Goal: "Finish reviewing for test", UserId: 1}
 
 	id, err = s.AddUserLog(log)
 
-	if err == nil || id != -1 {
+	if !errors.Is(err, model.InvalidNameErr) || id != -1 {
 		t.Error(err)
 	}
 
 	// Test blank category
-	log = model.Log{Id: 10, Date: -10000, Duration: 3600, Name: "Calculas", Category: "", Goal: "Finish reviewing for test", UserId: 1}
+	log = model.Log{Id: 10, Date: 10000, Duration: 3600, Name: "Calculas", Category: "", Goal: "Finish reviewing for test", UserId: 1}
 
 	id, err = s.AddUserLog(log)
 
-	if err == nil || id != -1 {
+	if !errors.Is(err, model.InvalidCategoryErr) || id != -1 {
 		t.Error(err)
 	}
 
 	// Test blank goal
-	log = model.Log{Id: 10, Date: -10000, Duration: 3600, Name: "Calculas", Category: "Study", Goal: "", UserId: 1}
+	log = model.Log{Id: 10, Date: 10000, Duration: 3600, Name: "Calculas", Category: "Study", Goal: "", UserId: 1}
 
 	id, err = s.AddUserLog(log)
 
-	if err == nil || id != -1 {
+	if !errors.Is(err, model.InvalidGoalErr) || id != -1 {
 		t.Error(err)
 	}
 
-	// Test blank goal
-	log = model.Log{Id: 10, Date: -10000, Duration: 3600, Name: "Calculas", Category: "Study", Goal: "Finish reviewing for test", UserId: 0}
+	// Test invalid user id
+	log = model.Log{Id: 10, Date: 10000, Duration: 3600, Name: "Calculas", Category: "Study", Goal: "Finish reviewing for test", UserId: 0}
 
 	id, err = s.AddUserLog(log)
 
-	if err == nil || id != -1 {
+	if !errors.Is(err, model.InvalidUserIdErr) || id != -1 {
 		t.Error(err)
 	}
 }
