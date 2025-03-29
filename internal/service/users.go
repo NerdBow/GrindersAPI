@@ -215,5 +215,19 @@ func (s *UserLogService) UpdateUserLog(log model.Log) (bool, error) {
 //
 // Returns true and nil if delete was successful. false and an error if not.
 func (s *UserLogService) DeleteUserLog(userId int, logId int64) (bool, error) {
-	return s.db.DeleteLog(userId, logId)
+	if userId <= 0 {
+		return false, model.InvalidUserIdErr
+	}
+
+	if logId <= 0 {
+		return false, model.InvalidIdErr
+	}
+
+	result, err := s.db.DeleteLog(userId, logId)
+
+	if err != nil || !result {
+		return false, err
+	}
+
+	return result, nil
 }
