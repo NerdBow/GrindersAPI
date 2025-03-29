@@ -13,11 +13,11 @@ import (
 type LogOrder uint8
 
 const (
-	PAGE_ROW_COUNT        int      = 20
-	ASC_DATE_ASC_DURATION LogOrder = 1
-	ASC_DATE_DES_DURATION LogOrder = 2
-	DES_DATE_ASC_DURATION LogOrder = 3
-	DES_DATE_DES_DURATION LogOrder = 4
+	PAGE_ROW_COUNT uint     = 20
+	DATE_ASC       LogOrder = 1
+	DATE_DES       LogOrder = 2
+	DURATION_ASC   LogOrder = 3
+	DURATION_DES   LogOrder = 4
 )
 
 type UserLogDatabase interface {
@@ -187,22 +187,22 @@ func (db Sqlite3DB) GetLogs(userId int, page uint, startTime int64, endTime int6
 	query := "SELECT id, date, duration, name, category, goal, userId FROM 'logs' WHERE userId = ? AND (? = 0 OR date >= ?) AND (? = 0 OR date <= ?) AND (? = '' OR category = ?)"
 
 	switch ordering {
-	case ASC_DATE_ASC_DURATION:
-		query += " ORDER BY date ASC, duration ASC"
+	case DATE_ASC:
+		query += " ORDER BY date ASC"
 
-	case ASC_DATE_DES_DURATION:
-		query += " ORDER BY date ASC, duration DESC"
+	case DATE_DES:
+		query += " ORDER BY date DESC"
 
-	case DES_DATE_ASC_DURATION:
-		query += " ORDER BY date DESC, duration ASC"
+	case DURATION_ASC:
+		query += " ORDER BY duration ASC"
 
-	case DES_DATE_DES_DURATION:
-		query += " ORDER BY date DESC, duration DESC"
+	case DURATION_DES:
+		query += " ORDER BY duration DESC"
 	}
 
 	query += " LIMIT ?, ?;"
 
-	rows, err := db.Query(query, userId, startTime, startTime, endTime, endTime, category, category, ((page - 1) * 10), page*10)
+	rows, err := db.Query(query, userId, startTime, startTime, endTime, endTime, category, category, (page-1)*PAGE_ROW_COUNT, page*PAGE_ROW_COUNT)
 
 	if err != nil {
 		return logsList, err
