@@ -268,7 +268,7 @@ func (db Sqlite3DB) DeleteLog(userId int, id int64) (bool, error) {
 	}
 
 	if rowsUpdated == 0 {
-		return false, errors.New("There was no log deleted")
+		return false, errors.New("There is no log that belongs to the user with that id")
 	}
 
 	return true, nil
