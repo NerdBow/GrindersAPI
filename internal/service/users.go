@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"strconv"
 	"time"
@@ -13,8 +14,13 @@ import (
 )
 
 var (
-	BlankFieldsErr     = errors.New("Username and Password must not be blank")
-	InvalidPasswordErr = errors.New("Password must be 8 or more characters")
+	BlankFieldsErr        = errors.New("Username and Password must not be blank")
+	InvalidPasswordErr    = errors.New("Password must be 8 or more characters")
+	InvalidPageErr        = errors.New("Page must be greater than 0")
+	InvalidTimeErr        = errors.New("Time must be greater than 0 if filtering by time")
+	InvalidLogIdQueryErr  = errors.New("LogId must be greater than 0 for single logs or equal to 0 for multiple logs")
+	UnmergableDurationErr = errors.New("Duration must not be negative for a merge log")
+	UnmergableDateErr     = errors.New("Date must not be negative for a merge log")
 )
 
 // The service which is used for user/ endpoint.
@@ -116,23 +122,63 @@ func NewUserLogService(db database.UserLogDatabase) UserLogService {
 //
 // Returns the id of the inserted log if successful. -1 and an error if unsuccessful.
 func (s *UserLogService) AddUserLog(log model.Log) (int64, error) {
-	return s.db.PostLog(log)
-}
+	problems := log.Validate()
+	if len(problems) != 0 {
+		return -1, errors.New(fmt.Sprintf("Problems: %v", problems))
+	}
 
-// Retrives a log to the database.
-// Takes in the userId and the logId
-//
-// Returns a log struct of the requested log. Empty struct and an error if unsuccessful.
-func (s *UserLogService) GetUserLog(userId int, logId int64) (model.Log, error) {
-	return s.db.GetLog(userId, logId)
+	id, err := s.db.PostLog(log)
+
+	if err != nil {
+		return -1, err
+	}
+
+	return id, nil
 }
 
 // Retrives a slice of logs of a user to the database.
-// Takes in the userId, age, startTime, timeLength, and category
+// Takes in the userId, logId, page, startTime, endTime, category, and order.
+// If logId is greater than 0 then function will return a single log that matches the id.
 //
 // Returns a slice log struct of the requested log. nil and an error if unsuccessful.
-func (s *UserLogService) GetUserLogs(userId int, page int, startTime int64, endTime int64, category string, order database.LogOrder) ([]model.Log, error) {
-	return s.db.GetLogs(userId, uint(page), startTime, endTime, category, order)
+func (s *UserLogService) GetUserLogs(userId int, logId int64, page uint, startTime int64, endTime int64, category string, order database.LogOrder) ([]model.Log, error) {
+	var logs []model.Log
+
+	if logId < 0 {
+		return logs, InvalidLogIdQueryErr
+	}
+
+	if page <= 0 {
+		return logs, InvalidPageErr
+	}
+
+	if startTime < 0 {
+		return logs, InvalidTimeErr
+	}
+
+	if endTime < 0 {
+		return logs, InvalidTimeErr
+	}
+
+	if logId > 0 {
+		log, err := s.db.GetLog(userId, logId)
+
+		if err != nil {
+			return logs, err
+		}
+
+		logs = append(logs, log)
+
+		return logs, nil
+	}
+
+	filteredLogs, err := s.db.GetLogs(userId, page, startTime, endTime, category, order)
+
+	if err != nil {
+		return logs, err
+	}
+
+	return filteredLogs, nil
 }
 
 // Updates a log to the database.
@@ -140,13 +186,48 @@ func (s *UserLogService) GetUserLogs(userId int, page int, startTime int64, endT
 //
 // Returns true and nil if update was successful. false and an error if not.
 func (s *UserLogService) UpdateUserLog(log model.Log) (bool, error) {
-	return s.db.UpdateLog(log)
+	problems := log.Validate()
+	for field, err := range problems {
+		if field == "id" || field == "userId" {
+			return false, err
+		}
+	}
+
+	if log.Date < 0 {
+		return false, UnmergableDateErr
+	}
+
+	if log.Duration < 0 {
+		return false, UnmergableDurationErr
+	}
+
+	result, err := s.db.UpdateLog(log)
+
+	if err != nil || !result {
+		return false, err
+	}
+
+	return result, nil
 }
 
 // Deletes a log of the user in the database.
 // Takes in a userId and the logId.
 //
 // Returns true and nil if delete was successful. false and an error if not.
-func (s *UserLogService) DeleteUserLog(userId int, logId int) (bool, error) {
-	return s.db.DeleteLog(userId, logId)
+func (s *UserLogService) DeleteUserLog(userId int, logId int64) (bool, error) {
+	if userId <= 0 {
+		return false, model.InvalidUserIdErr
+	}
+
+	if logId <= 0 {
+		return false, model.InvalidIdErr
+	}
+
+	result, err := s.db.DeleteLog(userId, logId)
+
+	if err != nil || !result {
+		return false, err
+	}
+
+	return result, nil
 }

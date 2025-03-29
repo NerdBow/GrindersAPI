@@ -50,7 +50,7 @@ type UserLogDatabase interface {
 	//
 	// Returns true of the operation was successful.
 	// Else, it returns false and an error if it was unsuccessful.
-	DeleteLog(int, int) (bool, error)
+	DeleteLog(int, int64) (bool, error)
 }
 
 type UserDatabase interface {
@@ -246,7 +246,7 @@ func (db Sqlite3DB) UpdateLog(newLog model.Log) (bool, error) {
 	return true, nil
 }
 
-func (db Sqlite3DB) DeleteLog(userId int, id int) (bool, error) {
+func (db Sqlite3DB) DeleteLog(userId int, id int64) (bool, error) {
 	statement, err := db.Prepare("DELETE FROM 'logs' WHERE id = ? AND userId = ?")
 
 	if err != nil {
@@ -268,7 +268,7 @@ func (db Sqlite3DB) DeleteLog(userId int, id int) (bool, error) {
 	}
 
 	if rowsUpdated == 0 {
-		return false, errors.New("There was no log deleted")
+		return false, errors.New("There is no log that belongs to the user with that id")
 	}
 
 	return true, nil
