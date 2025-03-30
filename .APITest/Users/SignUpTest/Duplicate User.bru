@@ -1,7 +1,7 @@
 meta {
   name: Duplicate User
   type: http
-  seq: 6
+  seq: 7
 }
 
 post {
@@ -13,11 +13,11 @@ post {
 body:json {
   {
     "username": "asdf",
-    "password": "1234"
+    "password": "password"
   }
 }
 
 assert {
-  res.status: eq 400
-  res.body.message: eq Password must be 8 or more characters
+  res.status: eq 500
+  res.body.message: eq Internal Server Error
 }

@@ -1,7 +1,7 @@
 meta {
-  name: Not a valid user
+  name: Valid
   type: http
-  seq: 6
+  seq: 7
 }
 
 post {
@@ -12,12 +12,12 @@ post {
 
 body:json {
   {
-    "username": "BobAndy",
+    "username": "test",
     "password": "password"
   }
 }
 
 assert {
-  res.status: eq 500
-  res.body.message: eq Internal Server Error
+  res.status: eq 200
+  res.body.token: isString
 }

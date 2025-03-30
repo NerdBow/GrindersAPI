@@ -1,5 +1,5 @@
 meta {
-  name: SignUp
+  name: No Body
   type: http
   seq: 1
 }
@@ -10,9 +10,7 @@ post {
   auth: none
 }
 
-body:json {
-  {
-    "username": "asdff",
-    "password": "asdfghasdfasdf"
-  }
+assert {
+  res.status: eq 400
+  res.body.message: eq Request must have a json body
 }
