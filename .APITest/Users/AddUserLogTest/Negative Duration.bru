@@ -1,0 +1,30 @@
+meta {
+  name: Negative Duration
+  type: http
+  seq: 16
+}
+
+post {
+  url: {{url}}{{port}}/user/log
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "date": 10,
+    "duration": -3600,
+    "name": "Testing API",
+    "category": "Test",
+    "goal": "Make the GrindersAPI work"
+  }
+}
+
+assert {
+  res.status: eq 400
+  res.body.message: eq Log duration must be greater than 0
+}

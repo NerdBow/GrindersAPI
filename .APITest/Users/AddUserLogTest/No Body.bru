@@ -1,0 +1,20 @@
+meta {
+  name: No Body
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{url}}{{port}}/user/log
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+assert {
+  res.status: eq 400
+  res.body.message: eq Request must have a json body
+}
