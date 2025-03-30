@@ -124,7 +124,7 @@ func WriteResponse(w http.ResponseWriter, statusCode int, message string) {
 // Logs and writes out message for any error case in handlers.
 func HandleError(w http.ResponseWriter, err error, statusCode int, message string) {
 	if err != nil {
-		log.Printf("%s\n", err)
+		log.Printf("Error: %-60s Message: %s\n", err, message)
 	}
 	WriteResponse(w, statusCode, message)
 }
