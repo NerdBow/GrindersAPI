@@ -18,6 +18,6 @@ body:json {
 }
 
 assert {
-  res.status: eq 403
-  res.body.message: eq Username or Password is incorrect
+  res.status: eq 200
+  res.body.token: isString
 }
