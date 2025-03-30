@@ -1,0 +1,15 @@
+meta {
+  name: AddUserLog
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{url}}{{port}}/user/log
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
