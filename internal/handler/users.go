@@ -28,6 +28,10 @@ func HandleUserSignIn(s service.UserService) http.HandlerFunc {
 		err := decoder.Decode(&userInfo)
 
 		if err != nil {
+			if err.Error() == "EOF" {
+				middleware.HandleError(w, NoBodyErr, http.StatusBadRequest, NoBodyErr.Error())
+				return
+			}
 			middleware.HandleError(w, err, http.StatusBadRequest, err.Error())
 			return
 		}
@@ -81,6 +85,10 @@ func HandleUserSignUp(s service.UserService) http.HandlerFunc {
 		err := decoder.Decode(&userInfo)
 
 		if err != nil {
+			if err.Error() == "EOF" {
+				middleware.HandleError(w, NoBodyErr, http.StatusBadRequest, NoBodyErr.Error())
+				return
+			}
 			middleware.HandleError(w, err, http.StatusBadRequest, err.Error())
 			return
 		}
