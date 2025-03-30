@@ -1,0 +1,24 @@
+meta {
+  name: No Fields
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{url}}{{port}}/user/log
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {}
+}
+
+assert {
+  res.status: eq 400
+  res.body.message: eq Log date must be greater than 0
+}

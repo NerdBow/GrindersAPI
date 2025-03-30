@@ -1,0 +1,29 @@
+meta {
+  name: No Duration
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{url}}{{port}}/user/log
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "date": 10,
+    "name": "Testing API",
+    "category": "Test",
+    "goal": "Make the GrindersAPI work"
+  }
+}
+
+assert {
+  res.status: eq 400
+  res.body.message: eq Log duration must be greater than 0
+}

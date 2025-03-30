@@ -1,0 +1,30 @@
+meta {
+  name: Blank Goal
+  type: http
+  seq: 14
+}
+
+post {
+  url: {{url}}{{port}}/user/log
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "date": 10,
+    "duration": 3600,
+    "name": "Testing API",
+    "category": "Test",
+    "goal": ""
+  }
+}
+
+assert {
+  res.status: eq 400
+  res.body.message: eq Log goal must not be blank
+}

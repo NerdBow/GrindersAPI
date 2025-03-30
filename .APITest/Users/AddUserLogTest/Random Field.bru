@@ -1,0 +1,24 @@
+meta {
+  name: Random Field
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{url}}{{port}}/user/log
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {"pp": "hi"}
+}
+
+assert {
+  res.status: eq 400
+  res.body.message: eq json: unknown field "pp"
+}

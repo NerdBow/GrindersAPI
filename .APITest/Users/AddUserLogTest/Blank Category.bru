@@ -1,0 +1,30 @@
+meta {
+  name: Blank Category
+  type: http
+  seq: 13
+}
+
+post {
+  url: {{url}}{{port}}/user/log
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "date": 10,
+    "duration": 3600,
+    "name": "Testing API",
+    "category": "",
+    "goal": "Make the GrindersAPI work"
+  }
+}
+
+assert {
+  res.status: eq 400
+  res.body.message: eq Log category must not be blank
+}
