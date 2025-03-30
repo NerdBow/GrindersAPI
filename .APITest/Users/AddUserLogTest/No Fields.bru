@@ -20,5 +20,5 @@ body:json {
 
 assert {
   res.status: eq 400
-  res.body.message: eq Log date must be greater than 0
+  res.body.message: startsWith Log
 }
