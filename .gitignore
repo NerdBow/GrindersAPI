@@ -29,4 +29,4 @@ go.work.sum
 /data/
 
 # Bruno Test
-*/FreeTest/
+.APITest/Users/FreeTest/
