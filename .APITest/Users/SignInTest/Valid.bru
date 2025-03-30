@@ -1,0 +1,23 @@
+meta {
+  name: Valid
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{url}}{{port}}/user/signin
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "test",
+    "password": "password"
+  }
+}
+
+assert {
+  res.status: eq 403
+  res.body.message: eq Username or Password is incorrect
+}
