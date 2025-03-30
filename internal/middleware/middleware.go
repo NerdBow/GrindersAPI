@@ -17,7 +17,8 @@ import (
 type ContextKey uint8
 
 var (
-	UserKey ContextKey = 1
+	UserKey        ContextKey = 1
+	NoUserInCtxErr            = errors.New("There was no user in the context of the request")
 )
 
 // Checks for JWT token in request Authorization header and parses it to a User struct which goes into the request's context.
@@ -74,8 +75,18 @@ func CheckAuth(handler http.HandlerFunc) http.HandlerFunc {
 		}
 
 		ctx := context.WithValue(r.Context(), UserKey, user)
+		log.Printf("User: %d, %s", user.UserId, user.Username)
 		handler(w, r.WithContext(ctx))
 	}
+}
+
+func GetUserFromCtx(ctx context.Context) (model.User, error) {
+	value := ctx.Value(UserKey)
+	user, ok := value.(model.User)
+	if !ok {
+		return model.User{}, NoUserInCtxErr
+	}
+	return user, nil
 }
 
 // Logs the IP of where the request is coming from and which endpoint they are requesting.
