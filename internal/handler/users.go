@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/NerdBow/GrindersAPI/internal/middleware"
 	"github.com/NerdBow/GrindersAPI/internal/model"
@@ -15,6 +16,7 @@ var (
 	NoUsernameFieldErr = errors.New("Username field must be provided in the request json or not empty")
 	NoPasswordFieldErr = errors.New("Password field must be provided in the request json or not empty")
 	NoBodyErr          = errors.New("Request must have a json body")
+	NoLogIdErr         = errors.New("URL query parameter must include 'id'")
 )
 
 func HandleUserSignIn(s service.UserService) http.HandlerFunc {
@@ -233,5 +235,47 @@ func HandleUserLogUpdate(s service.UserLogService) http.HandlerFunc {
 // Returns http handler func.
 func HandleUserLogDelete(s service.UserLogService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		user, err := middleware.GetUserFromCtx(r.Context())
+		if err != nil {
+			middleware.HandleError(w, err, http.StatusUnauthorized, "Unauthorized")
+			return
+		}
+
+		idQuery := r.URL.Query().Get("id")
+
+		if idQuery == "" {
+			middleware.HandleError(w, NoLogIdErr, http.StatusBadRequest, NoLogIdErr.Error())
+			return
+		}
+
+		logId, err := strconv.ParseInt(idQuery, 10, 64)
+
+		if err != nil {
+			middleware.HandleError(w, err, http.StatusInternalServerError, "Internal Sever Error")
+			return
+		}
+
+		result, err := s.DeleteUserLog(user.UserId, logId)
+
+		if err != nil {
+			middleware.HandleError(w, err, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+
+		responseJson := struct {
+			Result bool `json:"result"`
+		}{result}
+
+		messageBytes, err := json.Marshal(responseJson)
+
+		if err != nil {
+			middleware.HandleError(w, err, http.StatusInternalServerError, "Internal Server Error")
+			return
+		}
+
+		w.Write(messageBytes)
+		return
 	}
 }
