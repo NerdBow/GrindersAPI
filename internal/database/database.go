@@ -3,6 +3,7 @@ package database
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 
 	"github.com/NerdBow/GrindersAPI/internal/model"
 
@@ -255,12 +256,14 @@ func (db Sqlite3DB) DeleteLog(userId int, id int64) (bool, error) {
 	result, err := statement.Exec(id, userId)
 
 	if err != nil {
+		fmt.Println(result)
 		return false, err
 	}
 
 	rowsUpdated, err := result.RowsAffected()
 
 	if err != nil {
+		fmt.Println(result)
 		return false, err
 	}
 
