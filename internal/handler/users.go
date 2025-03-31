@@ -212,8 +212,6 @@ func HandleUserLogUpdate(s service.UserLogService) http.HandlerFunc {
 			return
 		}
 
-		w.WriteHeader(http.StatusOK)
-
 		responseJson := struct {
 			Result bool `json:"result"`
 		}{result}
@@ -225,6 +223,7 @@ func HandleUserLogUpdate(s service.UserLogService) http.HandlerFunc {
 			return
 		}
 
+		w.WriteHeader(http.StatusOK)
 		w.Write(messageBytes)
 		return
 	}
