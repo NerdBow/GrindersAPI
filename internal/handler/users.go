@@ -170,11 +170,89 @@ func HandleUserLogPost(s service.UserLogService) http.HandlerFunc {
 	}
 }
 
-// Handler for GET request of user/{}/log endpoint.
+// Handler for GET request of user/log endpoint.
 // Allows user to get information of one of their logs.
 // Returns http handler func.
 func HandleUserLogGet(s service.UserLogService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		user, err := middleware.GetUserFromCtx(r.Context())
+		if err != nil {
+			middleware.HandleError(w, err, http.StatusUnauthorized, "Unauthorized")
+			return
+		}
+
+		query := r.URL.Query()
+
+		var logId int64
+		var page uint
+		var startTime int64
+		var endTime int64
+		var category string
+		var order string
+
+		if query.Get("log_id") == "" {
+			logId = 0
+		} else {
+			logId, err = strconv.ParseInt(query.Get("log_id"), 10, 64)
+			if err != nil {
+				middleware.HandleError(w, err, http.StatusBadRequest, service.InvalidLogIdQueryErr.Error())
+				return
+			}
+		}
+
+		if query.Get("page") == "" {
+			page = 1
+		} else {
+			pageNumber, err := strconv.ParseUint(query.Get("page"), 10, 32)
+			if err != nil {
+				middleware.HandleError(w, err, http.StatusBadRequest, service.InvalidPageErr.Error())
+				return
+			}
+			page = uint(pageNumber)
+
+		}
+
+		if query.Get("start_time") == "" {
+			startTime = 0
+		} else {
+			startTime, err = strconv.ParseInt(query.Get("start_time"), 10, 64)
+			if err != nil {
+				middleware.HandleError(w, err, http.StatusBadRequest, service.InvalidTimeErr.Error())
+				return
+			}
+		}
+
+		if query.Get("end_time") == "" {
+			endTime = 0
+		} else {
+			endTime, err = strconv.ParseInt(query.Get("end_time"), 10, 64)
+			if err != nil {
+				middleware.HandleError(w, err, http.StatusBadRequest, service.InvalidTimeErr.Error())
+				return
+			}
+		}
+
+		category = query.Get("category")
+
+		order = query.Get("order")
+
+		logs, err := s.GetUserLogs(user.UserId, logId, page, startTime, endTime, category, order)
+
+		if err != nil {
+			middleware.HandleError(w, err, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		messageBytes, err := json.Marshal(logs)
+
+		if err != nil {
+			middleware.HandleError(w, err, http.StatusInternalServerError, "InternalServerError")
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		w.Write(messageBytes)
+		return
 	}
 }
 
