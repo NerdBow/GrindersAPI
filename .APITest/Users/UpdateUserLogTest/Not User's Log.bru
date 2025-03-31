@@ -1,10 +1,10 @@
 meta {
-  name: No Name
+  name: Not User's Log
   type: http
   seq: 7
 }
 
-post {
+put {
   url: {{url}}{{port}}/user/log
   body: json
   auth: bearer
@@ -16,14 +16,11 @@ auth:bearer {
 
 body:json {
   {
-    "date": 10,
-    "duration": 3600,
-    "category": "Test",
-    "goal": "Make the GrindersAPI work"
+    "id": 1
   }
 }
 
 assert {
   res.status: eq 400
-  res.body.message: eq Log name must not be blank
+  res.body.message: eq Unable to find log with the id for the user
 }

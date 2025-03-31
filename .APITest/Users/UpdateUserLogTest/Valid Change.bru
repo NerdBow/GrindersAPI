@@ -1,0 +1,33 @@
+meta {
+  name: Valid Change
+  type: http
+  seq: 8
+}
+
+put {
+  url: {{url}}{{port}}/user/log
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "id": 25,
+    "date": 0
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.result: isTruthy
+}
+
+script:pre-request {
+  var body = req.getBody();
+  body.date = Math.floor(Date.now() / 1000);
+  req.setBody(body);
+}
