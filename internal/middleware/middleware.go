@@ -27,14 +27,14 @@ func CheckAuth(handler http.HandlerFunc) http.HandlerFunc {
 		authString := r.Header.Get("Authorization")
 		parsedAuth := strings.Split(authString, " ")
 		if len(parsedAuth) != 2 {
-			HandleError(w, errors.New("JWT is not formated correctly"), http.StatusBadRequest, "JWT is not formatted correctly")
+			HandleError(w, errors.New("JWT is not formated correctly"), http.StatusUnauthorized, "JWT is not formatted correctly")
 			return
 		}
 
 		bearer, token := parsedAuth[0], parsedAuth[1]
 
 		if bearer != "Bearer" {
-			HandleError(w, errors.New("No Bearer in auth header"), http.StatusBadRequest, "JWT is not formatted correctly")
+			HandleError(w, errors.New("No Bearer in auth header"), http.StatusUnauthorized, "JWT is not formatted correctly")
 			return
 		}
 
@@ -51,7 +51,7 @@ func CheckAuth(handler http.HandlerFunc) http.HandlerFunc {
 		}
 
 		if err != nil {
-			HandleError(w, err, http.StatusBadRequest, "JWT is not formatted correctly")
+			HandleError(w, err, http.StatusUnauthorized, "JWT is not formatted correctly")
 			return
 		}
 
@@ -63,14 +63,14 @@ func CheckAuth(handler http.HandlerFunc) http.HandlerFunc {
 		user.UserId, err = strconv.Atoi(userId)
 
 		if !ok || err != nil {
-			HandleError(w, errors.New("JWT does not have a userId"), http.StatusBadRequest, "JWT is not formatted correctly")
+			HandleError(w, errors.New("JWT does not have a userId"), http.StatusUnauthorized, "JWT is not formatted correctly")
 			return
 		}
 
 		user.Username, ok = claims["username"].(string)
 
 		if !ok {
-			HandleError(w, errors.New("JWT does not have a username"), http.StatusBadRequest, "JWT is not formatted correctly")
+			HandleError(w, errors.New("JWT does not have a username"), http.StatusUnauthorized, "JWT is not formatted correctly")
 			return
 		}
 
