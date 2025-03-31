@@ -1,0 +1,35 @@
+meta {
+  name: Date ASC
+  type: http
+  seq: 18
+}
+
+get {
+  url: {{url}}{{port}}/user/log?order=date_asc
+  body: none
+  auth: bearer
+}
+
+params:query {
+  order: date_asc
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("Should have 20 logs", function () {
+    const data = res.getBody();
+    expect(data.length).to.equal(20);
+  });
+  
+  test("Should be log id 39", function () {
+    const data = res.getBody();
+    expect(data[0].id).to.equal(39);
+  });
+}

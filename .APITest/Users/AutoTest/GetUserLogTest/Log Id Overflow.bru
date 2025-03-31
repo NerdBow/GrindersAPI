@@ -1,0 +1,24 @@
+meta {
+  name: Log Id Overflow
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{url}}{{port}}/user/log?log_id=1000000000000000000000000000000000000000000000000000000
+  body: none
+  auth: bearer
+}
+
+params:query {
+  log_id: 1000000000000000000000000000000000000000000000000000000
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+assert {
+  res.status: eq 400
+  res.body.message: eq LogId must be greater than 0 for single logs or equal to 0 for multiple logs
+}

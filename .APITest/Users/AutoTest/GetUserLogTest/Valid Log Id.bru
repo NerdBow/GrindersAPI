@@ -1,0 +1,35 @@
+meta {
+  name: Valid Log Id
+  type: http
+  seq: 20
+}
+
+get {
+  url: {{url}}{{port}}/user/log?log_id=41
+  body: none
+  auth: bearer
+}
+
+params:query {
+  log_id: 41
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("Should have 1 log", function () {
+    const data = res.getBody();
+    expect(data.length).to.equal(1);
+  });
+  
+  test("Should be log id 41", function () {
+    const data = res.getBody();
+    expect(data[0].id).to.equal(41);
+  });
+}

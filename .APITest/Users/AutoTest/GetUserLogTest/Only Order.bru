@@ -1,0 +1,30 @@
+meta {
+  name: Only Order
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{url}}{{port}}/user/log?order=date_des
+  body: none
+  auth: bearer
+}
+
+params:query {
+  order: date_des
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("Should have 20 logs", function () {
+    const data = res.getBody();
+    expect(data.length).to.equal(20);
+  });
+}

@@ -1,0 +1,40 @@
+meta {
+  name: Filter Category
+  type: http
+  seq: 22
+}
+
+get {
+  url: {{url}}{{port}}/user/log?order=DATE_ASC&category=Category
+  body: none
+  auth: bearer
+}
+
+params:query {
+  order: DATE_ASC
+  category: Category
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("Should have 20 log", function () {
+    const data = res.getBody();
+    expect(data.length).to.equal(20);
+  });
+  
+  test("Should have logs 49 - 69 without 58", function () {
+    const data = res.getBody();
+    var ids = [];
+    for (var i = 0; i < 20; i++) {
+      ids.push(data[i].id)
+    }
+    expect(ids).to.eql([49, 50, 51, 52, 53, 54, 55, 56, 57, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69]);
+  });
+}

@@ -1,0 +1,20 @@
+meta {
+  name: Nothing
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{url}}{{port}}/user/log
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+assert {
+  res.status: eq 400
+  res.body.message: eq Order must be DATE_ASC, DATE_DES, DURATION_ASC, or DURATION_DES
+}
