@@ -92,7 +92,7 @@ func GetUserFromCtx(ctx context.Context) (model.User, error) {
 // Logs the IP of where the request is coming from and which endpoint they are requesting.
 func SetLog(handler http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("IP: %-22s Endpoint: %s\n", r.RemoteAddr, r.URL)
+		log.Printf("IP: %-22s Method: %-8s Endpoint: %s\n", r.RemoteAddr, r.Method, r.URL)
 		handler(w, r)
 	}
 }

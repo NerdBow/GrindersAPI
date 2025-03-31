@@ -1,10 +1,10 @@
 meta {
-  name: No Goal
+  name: Negative Date
   type: http
-  seq: 9
+  seq: 5
 }
 
-post {
+put {
   url: {{url}}{{port}}/user/log
   body: json
   auth: bearer
@@ -16,14 +16,12 @@ auth:bearer {
 
 body:json {
   {
-    "date": 10,
-    "duration": 3600,
-    "name": "Testing API",
-    "category": "Test"
+    "id": 25,
+    "date": -10
   }
 }
 
 assert {
   res.status: eq 400
-  res.body.message: eq Log goal must not be blank
+  res.body.message: eq Date must not be negative for a merge log
 }

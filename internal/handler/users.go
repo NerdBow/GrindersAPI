@@ -159,7 +159,8 @@ func HandleUserLogPost(s service.UserLogService) http.HandlerFunc {
 		messageBytes, err := json.Marshal(responseJson)
 
 		if err != nil {
-			log.Printf("Could not write error")
+			middleware.HandleError(w, err, http.StatusInternalServerError, "Internal Server Error")
+			return
 		}
 
 		w.Write(messageBytes)
@@ -175,11 +176,55 @@ func HandleUserLogGet(s service.UserLogService) http.HandlerFunc {
 	}
 }
 
-// Handler for PUT request of user/{}/log endpoint.
+// Handler for PUT request of user/log endpoint.
 // Allows user to update information of one of their logs.
 // Returns http handler func.
 func HandleUserLogUpdate(s service.UserLogService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		user, err := middleware.GetUserFromCtx(r.Context())
+		if err != nil {
+			middleware.HandleError(w, err, http.StatusUnauthorized, "Unauthorized")
+			return
+		}
+
+		decoder := json.NewDecoder(r.Body)
+		decoder.DisallowUnknownFields()
+		var requestedLog model.Log
+		err = decoder.Decode(&requestedLog)
+
+		if err != nil {
+			if err.Error() == "EOF" {
+				middleware.HandleError(w, NoBodyErr, http.StatusBadRequest, NoBodyErr.Error())
+				return
+			}
+			middleware.HandleError(w, err, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		requestedLog.UserId = user.UserId
+
+		result, err := s.UpdateUserLog(requestedLog)
+
+		if err != nil {
+			middleware.HandleError(w, err, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+
+		responseJson := struct {
+			Result bool `json:"result"`
+		}{result}
+
+		messageBytes, err := json.Marshal(responseJson)
+
+		if err != nil {
+			middleware.HandleError(w, err, http.StatusInternalServerError, "Internal Server Error")
+			return
+		}
+
+		w.Write(messageBytes)
+		return
 	}
 }
 

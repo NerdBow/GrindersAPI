@@ -1,10 +1,10 @@
 meta {
-  name: No Name
+  name: Negative Duration
   type: http
   seq: 7
 }
 
-post {
+put {
   url: {{url}}{{port}}/user/log
   body: json
   auth: bearer
@@ -16,14 +16,12 @@ auth:bearer {
 
 body:json {
   {
-    "date": 10,
-    "duration": 3600,
-    "category": "Test",
-    "goal": "Make the GrindersAPI work"
+    "id": 25,
+    "duration": -100
   }
 }
 
 assert {
   res.status: eq 400
-  res.body.message: eq Log name must not be blank
+  res.body.message: eq Duration must not be negative for a merge log
 }
