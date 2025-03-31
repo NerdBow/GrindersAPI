@@ -1,0 +1,24 @@
+meta {
+  name: Negative Page
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{url}}{{port}}/user/log?page=-10
+  body: none
+  auth: bearer
+}
+
+params:query {
+  page: -10
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+assert {
+  res.status: eq 400
+  res.body.message: eq Page must be greater than 0
+}

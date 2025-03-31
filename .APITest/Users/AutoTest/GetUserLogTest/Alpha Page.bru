@@ -1,0 +1,24 @@
+meta {
+  name: Alpha Page
+  type: http
+  seq: 13
+}
+
+get {
+  url: {{url}}{{port}}/user/log?page=pp
+  body: none
+  auth: bearer
+}
+
+params:query {
+  page: pp
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+assert {
+  res.status: eq 400
+  res.body.message: eq Page must be greater than 0
+}

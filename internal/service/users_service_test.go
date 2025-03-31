@@ -181,7 +181,7 @@ func TestGetUserLogs(t *testing.T) {
 	s := NewUserLogService(&MockDB{})
 
 	// Test single log retrival
-	logs, err := s.GetUserLogs(1, 1, 1, 0, 0, "", database.DATE_ASC)
+	logs, err := s.GetUserLogs(1, 1, 1, 0, 0, "", "DATE_ASC")
 
 	if err != nil {
 		t.Error(err)
@@ -192,14 +192,14 @@ func TestGetUserLogs(t *testing.T) {
 	}
 
 	// Test invalid logId
-	logs, err = s.GetUserLogs(1, -10, 1, 0, 0, "", database.DATE_ASC)
+	logs, err = s.GetUserLogs(1, -10, 1, 0, 0, "", "DATE_ASC")
 
 	if !errors.Is(err, InvalidLogIdQueryErr) || len(logs) != 0 {
 		t.Error("There was no error returns when negative logId was inputted")
 	}
 
 	// Test multiple log retrival
-	logs, err = s.GetUserLogs(1, 0, 1, 0, 0, "", database.DATE_ASC)
+	logs, err = s.GetUserLogs(1, 0, 1, 0, 0, "", "DATE_ASC")
 
 	if err != nil {
 		t.Error(err)
@@ -210,23 +210,72 @@ func TestGetUserLogs(t *testing.T) {
 	}
 
 	// Test invalid page
-	logs, err = s.GetUserLogs(1, 0, 0, 0, 0, "", database.DATE_ASC)
+	logs, err = s.GetUserLogs(1, 0, 0, 0, 0, "", "DATE_ASC")
 
 	if !errors.Is(err, InvalidPageErr) || len(logs) != 0 {
 		t.Error(err)
 	}
 
 	// Test invalid startTime
-	logs, err = s.GetUserLogs(1, 0, 1, -1, 0, "", database.DATE_ASC)
+	logs, err = s.GetUserLogs(1, 0, 1, -1, 0, "", "DATE_ASC")
 
 	if !errors.Is(err, InvalidTimeErr) || len(logs) != 0 {
 		t.Error(err)
 	}
 
 	// Test invalid endTime
-	logs, err = s.GetUserLogs(1, 0, 1, 10, -1, "", database.DATE_ASC)
+	logs, err = s.GetUserLogs(1, 0, 1, 10, -1, "", "DATE_ASC")
 
 	if !errors.Is(err, InvalidTimeErr) || len(logs) != 0 {
+		t.Error(err)
+	}
+
+	// Test blank log order
+	logs, err = s.GetUserLogs(1, 0, 1, 0, 0, "", "")
+
+	if !errors.Is(err, InvalidOrderErr) || len(logs) != 0 {
+		t.Error(err)
+	}
+
+	// Test random log order
+	logs, err = s.GetUserLogs(1, 0, 1, 0, 0, "", "asdf")
+
+	if !errors.Is(err, InvalidOrderErr) || len(logs) != 0 {
+		t.Error(err)
+	}
+
+	// Test lowercase valid order
+	logs, err = s.GetUserLogs(1, 0, 1, 0, 0, "", "duratIoN_DeS")
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	// Test date_asc order
+	logs, err = s.GetUserLogs(1, 0, 1, 0, 0, "", "dAte_AsC")
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	// Test date_des order
+	logs, err = s.GetUserLogs(1, 0, 1, 0, 0, "", "dAte_des")
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	// Test duration_asc order
+	logs, err = s.GetUserLogs(1, 0, 1, 0, 0, "", "durAtIon_aSc")
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	// Test duration_des order
+	logs, err = s.GetUserLogs(1, 0, 1, 0, 0, "", "durAtIon_DES")
+
+	if err != nil {
 		t.Error(err)
 	}
 }

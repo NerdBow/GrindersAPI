@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/NerdBow/GrindersAPI/internal/database"
@@ -18,6 +19,7 @@ var (
 	InvalidPageErr        = errors.New("Page must be greater than 0")
 	InvalidTimeErr        = errors.New("Time must be greater than 0 if filtering by time")
 	InvalidLogIdQueryErr  = errors.New("LogId must be greater than 0 for single logs or equal to 0 for multiple logs")
+	InvalidOrderErr       = errors.New("Order must be DATE_ASC, DATE_DES, DURATION_ASC, or DURATION_DES")
 	UnmergableDurationErr = errors.New("Duration must not be negative for a merge log")
 	UnmergableDateErr     = errors.New("Date must not be negative for a merge log")
 )
@@ -140,7 +142,7 @@ func (s *UserLogService) AddUserLog(log model.Log) (int64, error) {
 // If logId is greater than 0 then function will return a single log that matches the id.
 //
 // Returns a slice log struct of the requested log. nil and an error if unsuccessful.
-func (s *UserLogService) GetUserLogs(userId int, logId int64, page uint, startTime int64, endTime int64, category string, order database.LogOrder) ([]model.Log, error) {
+func (s *UserLogService) GetUserLogs(userId int, logId int64, page uint, startTime int64, endTime int64, category string, order string) ([]model.Log, error) {
 	var logs []model.Log
 
 	if logId < 0 {
@@ -171,7 +173,23 @@ func (s *UserLogService) GetUserLogs(userId int, logId int64, page uint, startTi
 		return logs, nil
 	}
 
-	filteredLogs, err := s.db.GetLogs(userId, page, startTime, endTime, category, order)
+	var logOrder database.LogOrder
+
+	switch strings.ToUpper(order) {
+	case "DATE_ASC":
+		logOrder = database.DATE_ASC
+	case "DATE_DES":
+		logOrder = database.DATE_DES
+	case "DURATION_ASC":
+		logOrder = database.DURATION_ASC
+	case "DURATION_DES":
+		logOrder = database.DURATION_DES
+	default:
+		return logs, InvalidOrderErr
+
+	}
+
+	filteredLogs, err := s.db.GetLogs(userId, page, startTime, endTime, category, logOrder)
 
 	if err != nil {
 		return logs, err

@@ -1,0 +1,31 @@
+meta {
+  name: Auth Setup copy
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{url}}{{port}}/user/signin
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "username": "test",
+    "password": "password"
+  }
+}
+
+body:text {
+  {"username": }
+}
+
+assert {
+  res.status: eq 200
+  res.body.token: isNotEmpty
+}
+
+script:post-response {
+  bru.setVar("token",res.body.token);
+}

@@ -1,0 +1,57 @@
+meta {
+  name: Time
+  type: http
+  seq: 21
+}
+
+get {
+  url: {{url}}{{port}}/user/log?order=DATE_ASC&start_time=250&end_time=254
+  body: none
+  auth: bearer
+}
+
+params:query {
+  order: DATE_ASC
+  start_time: 250
+  end_time: 254
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("Should have 5 log", function () {
+    const data = res.getBody();
+    expect(data.length).to.equal(5);
+  });
+  
+  test("Should have id of 42", function () {
+    const data = res.getBody();
+    expect(data[0].id).to.equal(42);
+  });
+  
+  test("Should be have id's 43", function () {
+    const data = res.getBody();
+    expect(data[1].id).to.equal(43);
+  });
+  
+  test("Should be have id's 44", function () {
+    const data = res.getBody();
+    expect(data[2].id).to.equal(44);
+  });
+  
+  test("Should be have id's 45", function () {
+    const data = res.getBody();
+    expect(data[3].id).to.equal(45);
+  });
+  
+  test("Should be have id's 46", function () {
+    const data = res.getBody();
+    expect(data[4].id).to.equal(46);
+  });
+}
