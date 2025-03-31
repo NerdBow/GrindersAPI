@@ -1,0 +1,34 @@
+meta {
+  name: Valid Log copy
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{url}}{{port}}/user/log
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "date": 10,
+    "duration": 3600,
+    "name": "To Delete",
+    "category": "Delete",
+    "goal": "If this is still in the DB then the Delete endpoint is not working"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.id: isNumber
+}
+
+script:post-response {
+  bru.setVar("logId", res.body.id);
+}

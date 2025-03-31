@@ -1,0 +1,20 @@
+meta {
+  name: No Parameters
+  type: http
+  seq: 1
+}
+
+delete {
+  url: {{url}}{{port}}/user/log
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+assert {
+  res.status: eq 400
+  res.body.message: eq URL query parameter must include 'id'
+}
