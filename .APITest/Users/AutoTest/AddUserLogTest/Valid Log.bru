@@ -1,0 +1,34 @@
+meta {
+  name: Valid Log
+  type: http
+  seq: 17
+}
+
+post {
+  url: {{url}}{{port}}/user/log
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "date": 10,
+    "duration": 3600,
+    "name": "Post",
+    "category": "Post",
+    "goal": "Test"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.id: isNumber
+}
+
+script:post-response {
+  bru.setVar("logId", res.body.id);
+}
