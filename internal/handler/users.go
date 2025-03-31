@@ -159,7 +159,8 @@ func HandleUserLogPost(s service.UserLogService) http.HandlerFunc {
 		messageBytes, err := json.Marshal(responseJson)
 
 		if err != nil {
-			log.Printf("Could not write error")
+			middleware.HandleError(w, err, http.StatusInternalServerError, "Internal Server Error")
+			return
 		}
 
 		w.Write(messageBytes)
