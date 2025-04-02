@@ -14,22 +14,26 @@ import (
 
 // Starts the server for the API
 func Run() {
-	err := godotenv.Load(".env")
+	if os.Getenv("DATABASE") == "" {
+		err := godotenv.Load(".env")
 
-	if err != nil {
-		log.Fatal(err)
+		if err != nil {
+			log.Println(err)
+		}
 	}
 
 	mux := http.NewServeMux()
 
 	sqlService := os.Getenv("DATABASE")
 
+	databaseFile := os.Getenv("DATABASEFILE")
+
 	var userService service.UserService
 	var userLogService service.UserLogService
 
 	switch sqlService {
 	case "sqlite3":
-		db, err := database.NewSqlite3DB("data/logs.db")
+		db, err := database.NewSqlite3DB(databaseFile)
 
 		if err != nil {
 			fmt.Println(err)
