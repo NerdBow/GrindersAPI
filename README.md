@@ -1,4 +1,11 @@
-# GrindersAPI
+# ⏱️ GrindersAPI
+---
+## 🛑 **CAUTION** 🛑
+Grinders is still in development and there is no frontend for it right now. 
+
+It is basically not useable right now, unless you want to manually send in the HTTP request.
+****
+
 🚨 **(It is NOT the dating app! I repeat, it is NOT the dating app)** 🚨
 
 This is the backend server for my time tracking application Grinders which is suppose to work in conjuction to the GrindersTUI.
@@ -15,7 +22,7 @@ I hope some people will also find the application useful as well.
 - Add refresh tokens to auth
 
 ## 🧻 Documentation
-🚧 In Progresss 🚧
+### 🚧 In progress 🚧
 
 ## 🔧 Installation & Setup
 ```bash
@@ -31,7 +38,7 @@ touch data/logs.db
 # Create a .env for your settings
 touch .env
 ```
-### env file (make sure to include everything)
+### .env file (make sure to include everything)
 ```.env
 # argon2id settings
 HASHMEMORY=64
