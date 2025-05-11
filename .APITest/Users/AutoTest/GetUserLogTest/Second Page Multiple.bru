@@ -1,0 +1,31 @@
+meta {
+  name: Second Page Multiple
+  type: http
+  seq: 24
+}
+
+get {
+  url: {{url}}{{port}}/user/log?order=DATE_ASC&page=2
+  body: none
+  auth: bearer
+}
+
+params:query {
+  order: DATE_ASC
+  page: 2
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("Should have 20 log", function () {
+    const data = res.getBody();
+    expect(data.length).to.equal(20);
+  });
+}

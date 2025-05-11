@@ -199,9 +199,9 @@ func (db Sqlite3DB) GetLogs(userId int, page uint, startTime int64, endTime int6
 		query += " ORDER BY duration DESC"
 	}
 
-	query += " LIMIT ?, ?;"
+	query += " LIMIT ? OFFSET ?;"
 
-	rows, err := db.Query(query, userId, startTime, startTime, endTime, endTime, category, category, (page-1)*PAGE_ROW_COUNT, page*PAGE_ROW_COUNT)
+	rows, err := db.Query(query, userId, startTime, startTime, endTime, endTime, category, category, PAGE_ROW_COUNT, (page-1)*PAGE_ROW_COUNT)
 
 	if err != nil {
 		return logsList, err
